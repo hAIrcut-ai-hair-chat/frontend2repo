@@ -1,322 +1,155 @@
 <template>
-  <div class="app-container">
-
-     <header class="top-header">
-      <div class="header-left">
-        <span class="mdi mdi-soccer brand-icon"></span>
-        <span class="brand">SportsGram</span>
-      </div>
-
-      <div class="search-box">
-        <span class="mdi mdi-magnify"></span>
-        <input v-model="search" placeholder="Pesquisar atletas, times..." />
-      </div>
-
-      <div class="header-right">
-        <span class="mdi mdi-bell-outline icon-btn"></span>
-        <span class="mdi mdi-message-outline icon-btn"></span>
-      </div>
-    </header>
-
-    <!-- STORIES -->
-    <section class="stories">
-      <div
-        v-for="story in stories"
-        :key="story.id"
-        class="story"
-      >
-        <img :src="story.avatar" />
-        <span>{{ story.name }}</span>
-      </div>
-    </section>
-
-     <main class="feed">
-
-      <div v-for="post in filteredPosts" :key="post.id" class="post-card">
-
-        <div class="post-header">
-          <img :src="post.avatar" class="avatar" />
-
-          <div class="post-user">
-            <span class="username">{{ post.username }}</span>
-            <span class="post-time">{{ post.time }}</span>
-          </div>
-
-          <div class="menu-wrapper">
-            <span class="mdi mdi-dots-horizontal" @click="toggleMenu(post.id)"></span>
-
-            <div v-if="post.showMenu" class="dropdown-menu">
-              <button @click="followUser(post)">Seguir</button>
-              <button @click="savePost(post)">Salvar</button>
-              <button @click="hidePost(post.id)">Ocultar</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="post-image-wrapper">
-          <img :src="post.image" class="post-image" />
-        </div>
-
-         <div class="post-actions">
-
-          <button @click="toggleLike(post)" class="action-btn">
-            <span class="mdi" :class="post.liked ? 'mdi-heart' : 'mdi-heart-outline'"></span>
-          </button>
-
-          <button class="action-btn">
-            <span class="mdi mdi-comment-outline"></span>
-          </button>
-
-          <button class="action-btn" @click="sharePost(post)">
-            <span class="mdi mdi-share-variant-outline"></span>
-          </button>
-
-          <button class="action-btn" style="margin-left:auto" @click="toggleSave(post)">
-            <span class="mdi" :class="post.saved ? 'mdi-bookmark' : 'mdi-bookmark-outline'"></span>
-          </button>
-
-        </div>
-
-        <div class="stats">
-          <strong>{{ post.likes }} curtidas</strong>
-          <span>{{ post.comments }} comentários</span>
-          <span>{{ post.shares }} compartilhamentos</span>
-        </div>
-
-        <!-- CAPTION -->
-        <div class="caption">
-          <strong>{{ post.username }}</strong> {{ post.caption }}
-        </div>
-
-      </div>
-
-    </main>
-
+  <div id="app">
+    <AppHeader />
+    <div class="layout">
+      <SidebarLeft />
+      <main>
+        <StoriesBar :stories="stories" />
+        <ComposeBox />
+        <PostFeed :posts="posts" @delete="deletePost" />
+      </main>
+      <SidebarRight :trends="trends" :suggestions="suggestions" />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-
-const search = ref('')
+import { ref } from 'vue'
+import AppHeader from '@/components/AppHeader.vue'
+import SidebarLeft from '@/components/SidebarLeft.vue'
+import SidebarRight from '@/components/SidebarRight.vue'
+import StoriesBar from '@/components/StoriesBar.vue'
+import ComposeBox from '@/components/ComposeBox.vue'
+import PostFeed from '@/components/PostFeed.vue'
 
 const stories = ref([
-  { id: 1, name: 'Neymar', avatar: 'https://i.pravatar.cc/150?img=1' },
-  { id: 2, name: 'LeBron', avatar: 'https://i.pravatar.cc/150?img=2' },
-  { id: 3, name: 'Medina', avatar: 'https://i.pravatar.cc/150?img=3' },
-  { id: 4, name: 'Flamengo', avatar: 'https://i.pravatar.cc/150?img=4' },
-  { id: 5, name: 'NBA', avatar: 'https://i.pravatar.cc/150?img=5' }
+  { id: 1, name: 'Ana Silva', avatar: 'https://i.pravatar.cc/60?img=11' },
+  { id: 2, name: 'Carlos M.', avatar: 'https://i.pravatar.cc/60?img=32' },
+  { id: 3, name: 'Luisa R.', avatar: 'https://i.pravatar.cc/60?img=47' },
+  { id: 4, name: 'Pedro K.', avatar: 'https://i.pravatar.cc/60?img=5' },
+  { id: 5, name: 'Mari T.', avatar: 'https://i.pravatar.cc/60?img=25' },
 ])
 
 const posts = ref([
   {
     id: 1,
-    username: 'neymarjr',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    image: 'https://picsum.photos/600/400?1',
-    caption: 'Mais uma vitória 🔥',
-    time: '2h',
-    likes: 1200,
-    comments: 54,
-    shares: 12,
-    liked: false,
-    saved: false,
-    showMenu: false
+    user: 'Ana Silva',
+    avatar: 'https://i.pravatar.cc/40?img=11',
+    initials: null,
+    gradient: null,
+    time: '2 horas atrás',
+    category: 'Design',
+    tags: [{ label: '#UIDesign', type: 'blue' }, { label: '#DarkMode', type: 'purple' }],
+    image: null,
+    imageIcon: 'ti-layout-dashboard',
+    imageClass: 'ph-1',
+    likes: 1248,
+    comments: 48,
+    caption: 'Finalizei o novo sistema de design para o app. Cores, tipografia e dark mode totalmente repensados — adorei o resultado ✨',
+    time2: 'Hoje às 14:32',
+    liked: true,
+    bookmarked: true,
   },
   {
     id: 2,
-    username: 'nba',
-    avatar: 'https://i.pravatar.cc/150?img=2',
-    image: 'https://picsum.photos/600/400?2',
-    caption: 'Que jogada absurda!',
-    time: '4h',
-    likes: 5400,
-    comments: 210,
-    shares: 88,
+    user: 'Carlos Mendes',
+    avatar: null,
+    initials: 'CM',
+    gradient: 'linear-gradient(135deg,#7c9eff,#a78bfa)',
+    time: '5 horas atrás',
+    category: 'Dev',
+    tags: [{ label: '#TypeScript', type: 'purple' }, { label: '#WebDev', type: 'blue' }],
+    image: null,
+    imageIcon: 'ti-code',
+    imageClass: 'ph-2',
+    likes: 892,
+    comments: 31,
+    caption: 'Migrei meu projeto inteiro para TypeScript 5.5 e os novos recursos de inferência de tipo são simplesmente absurdos. Vale muito a pena.',
+    time2: 'Hoje às 11:15',
     liked: false,
-    saved: false,
-    showMenu: false
-  }
+    bookmarked: false,
+  },
+  {
+    id: 3,
+    user: 'Luisa Ramos',
+    avatar: 'https://i.pravatar.cc/40?img=47',
+    initials: null,
+    gradient: null,
+    time: 'Ontem',
+    category: 'Fotografia',
+    tags: [{ label: '#Fotografia', type: 'pink' }, { label: '#Arte', type: 'blue' }],
+    image: null,
+    imageIcon: 'ti-camera',
+    imageClass: 'ph-3',
+    likes: 3412,
+    comments: 117,
+    caption: 'Sessão fotográfica no pôr do sol de ontem. Às vezes a natureza já faz todo o trabalho de composição pra você 🌅',
+    time2: 'Ontem às 19:47',
+    liked: false,
+    bookmarked: false,
+  },
 ])
 
-const filteredPosts = computed(() => {
-  if (!search.value) return posts.value
-  return posts.value.filter(p =>
-    p.username.toLowerCase().includes(search.value.toLowerCase())
-  )
-})
+const trends = ref([
+  { id: 1, name: '#UIDesign', count: '12.4 mil posts' },
+  { id: 2, name: '#TypeScript', count: '8.9 mil posts' },
+  { id: 3, name: '#DarkMode', count: '6.2 mil posts' },
+  { id: 4, name: '#Fotografia', count: '4.7 mil posts' },
+])
 
-function toggleLike(post) {
-  post.liked = !post.liked
-  post.likes += post.liked ? 1 : -1
-}
+const suggestions = ref([
+  { id: 1, name: 'Mariana T.', sub: 'Designer · 4.1 mil seg.', initials: 'MT', gradient: 'linear-gradient(135deg,#f472b6,#a78bfa)', avatar: null },
+  { id: 2, name: 'Pedro K.', sub: 'Dev · 2.8 mil seg.', initials: 'PK', gradient: 'linear-gradient(135deg,#34d399,#7c9eff)', avatar: null },
+  { id: 3, name: 'Sofia N.', sub: 'Fotógrafa · 9.3 mil seg.', initials: null, gradient: null, avatar: 'https://i.pravatar.cc/34?img=5' },
+])
 
-function toggleSave(post) {
-  post.saved = !post.saved
-}
-
-function sharePost(post) {
-  post.shares++
-  alert('Post compartilhado!')
-}
-
-function toggleMenu(id) {
-  posts.value.forEach(p => {
-    if (p.id === id) p.showMenu = !p.showMenu
-    else p.showMenu = false
-  })
-}
-
-function followUser(post) {
-  alert('Seguindo ' + post.username)
-}
-
-function savePost(post) {
-  post.saved = true
-}
-
-function hidePost(id) {
+function deletePost(id) {
   posts.value = posts.value.filter(p => p.id !== id)
 }
 </script>
 
-<style scoped>
-@import url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css");
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
 
-.app-container {
-  max-width: 650px;
-  margin: auto;
-  font-family: Arial;
+:root {
+  --bg: #080809;
+  --card: #0f0f11;
+  --card2: #141416;
+  --border: #1e1e22;
+  --border2: #2a2a30;
+  --txt: #ececec;
+  --txt2: #8a8a96;
+  --txt3: #484854;
+  --accent: #7c9eff;
+  --accent2: #a78bfa;
+  --rose: #f472b6;
+  --amber: #fbbf24;
+  --r: 14px;
+  --font: 'Inter', system-ui, sans-serif;
 }
 
-/* HEADER */
-.top-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  position: sticky;
-  top: 0;
-  background: white;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--txt);
+  -webkit-font-smoothing: antialiased;
 }
 
-.brand {
-  font-weight: bold;
-  color: #1877f2;
+#app { min-height: 100vh; }
+
+.layout {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: grid;
+  grid-template-columns: 200px 1fr 220px;
+  gap: 24px;
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: #f0f2f5;
-  padding: 5px 10px;
-  border-radius: 20px;
-}
-
-.search-box input {
-  border: none;
-  outline: none;
-  background: transparent;
-}
-
-/* STORIES */
-.stories {
-  display: flex;
-  overflow-x: auto;
-  gap: 10px;
-  padding: 10px;
-}
-
-.story {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 12px;
-}
-
-.story img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 2px solid #1877f2;
-}
-
-/* POST */
-.post-card {
-  margin: 10px 0;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  overflow: hidden;
-  background: white;
-}
-
-.post-header {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.post-user {
-  margin-left: 10px;
-}
-
-.username {
-  font-weight: bold;
-}
-
-.post-image {
-  width: 100%;
-}
-
-/* ACTIONS */
-.post-actions {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* STATS */
-.stats {
-  font-size: 12px;
-  padding: 0 10px;
-  color: gray;
-}
-
-/* MENU */
-.menu-wrapper {
-  margin-left: auto;
-  position: relative;
-}
-
-.dropdown-menu {
-  position: absolute;
-  right: 0;
-  top: 20px;
-  background: white;
-  border: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-}
-
-.dropdown-menu button {
-  padding: 5px 10px;
-  border: none;
-  background: none;
-  cursor: pointer;
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
 }
 </style>
