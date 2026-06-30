@@ -10,16 +10,39 @@
         A senha deve ter pelo menos 8 caracteres e incluir letras e números.
       </p>
 
-      <Transition name="fade">
-        <div v-if="success" class="success-box">
-          <i class="ti ti-circle-check" aria-hidden="true"></i>
-          <p>Senha redefinida. Você já pode entrar na sua conta.</p>
-        </div>
-      </Transition>
+      <form class="field-group" @submit.prevent="submit">
+        <AuthField
+          id="email"
+          label="E-mail"
+          type="email"
+          placeholder="voce@exemplo.com"
+          icon="ti-mail"
+          v-model="form.email"
+          :hasError="errors.email"
+          errorMsg="Informe um e-mail válido."
+        />
 
-      <form v-if="!success" class="field-group" @submit.prevent="submit">
-        <AuthField id="new-pass" label="Nova senha" type="password" placeholder="••••••••" icon="ti-lock"
-          v-model="form.password" :hasError="errors.password" errorMsg="A senha não atende aos requisitos.">
+        <AuthField
+          id="code"
+          label="Código de segurança"
+          type="text"
+          placeholder="000000"
+          icon="ti-shield-lock"
+          v-model="form.code"
+          :hasError="errors.code"
+          errorMsg="Informe o código enviado por e-mail."
+        />
+
+        <AuthField
+          id="new-pass"
+          label="Nova senha"
+          type="password"
+          placeholder="••••••••"
+          icon="ti-lock"
+          v-model="form.password"
+          :hasError="errors.password"
+          errorMsg="A senha não atende aos requisitos."
+        >
           <div class="requirements">
             <div class="req-item" :class="{ ok: reqs.length }">
               <i :class="reqs.length ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
@@ -40,17 +63,21 @@
           </div>
         </AuthField>
 
-        <AuthField id="confirm-pass" label="Confirmar nova senha" type="password" placeholder="••••••••"
-          icon="ti-lock-check" v-model="form.confirm" :hasError="errors.confirm" errorMsg="As senhas não coincidem." />
+        <AuthField
+          id="confirm-pass"
+          label="Confirmar nova senha"
+          type="password"
+          placeholder="••••••••"
+          icon="ti-lock-check"
+          v-model="form.confirm"
+          :hasError="errors.confirm"
+          errorMsg="As senhas não coincidem."
+        />
       </form>
 
-      <button v-if="!success" class="btn-primary" @click="submit">
+      <button class="btn-primary" @click="submit">
         Redefinir senha
       </button>
-
-      <router-link v-if="success" to="/login" class="btn-primary btn-primary--link">
-        Ir para o login
-      </router-link>
 
       <div class="bottom-link">
         <router-link to="/login" class="link">
@@ -64,12 +91,14 @@
 
 <script setup>
 import { reactive, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import AuthCard from '@/components/AuthCard.vue'
 import AuthField from '@/components/AuthField.vue'
 
-const form = reactive({ password: '', confirm: '' })
-const errors = reactive({ password: false, confirm: false })
-const success = reactive({ value: false })
+const router = useRouter()
+
+const form = reactive({ email: '', code: '', password: '', confirm: '' })
+const errors = reactive({ email: false, code: false, password: false, confirm: false })
 
 const reqs = computed(() => ({
   length: form.password.length >= 8,
@@ -81,10 +110,13 @@ const reqs = computed(() => ({
 const allReqs = computed(() => Object.values(reqs.value).every(Boolean))
 
 function submit() {
+  errors.email = !form.email.includes('@')
+  errors.code = form.code.trim().length === 0
   errors.password = !allReqs.value
   errors.confirm = form.password !== form.confirm
-  if (!errors.password && !errors.confirm) {
-    success.value = true
+
+  if (!errors.email && !errors.code && !errors.password && !errors.confirm) {
+    router.push('/login')
   }
 }
 </script>
@@ -97,6 +129,7 @@ function submit() {
   justify-content: center;
   align-items: center;
 }
+
 .icon-circle {
   width: 56px;
   height: 56px;
@@ -127,30 +160,6 @@ function submit() {
   color: var(--txt2);
   line-height: 1.55;
   margin-bottom: 24px;
-}
-
-.success-box {
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.success-box .ti {
-  color: var(--success);
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.success-box p {
-  font-size: 0.83rem;
-  color: var(--success);
-  line-height: 1.5;
 }
 
 .field-group {
@@ -238,14 +247,4 @@ function submit() {
 .link .ti {
   font-size: 15px;
 }
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
+</style>  
