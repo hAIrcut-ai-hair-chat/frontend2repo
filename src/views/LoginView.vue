@@ -1,61 +1,47 @@
 <template>
-  <AuthCard>
-    <div class="screen-title">Bem-vindo de volta</div>
-    <p class="screen-sub">Entre na sua conta para continuar.</p>
+  <div class="page">
+    <AuthCard>
+      <div class="screen-title">Bem-vindo de volta</div>
+      <p class="screen-sub">Entre na sua conta para continuar.</p>
 
-    <form class="field-group" @submit.prevent="submit">
-      <AuthField
-        id="email"
-        label="E-mail"
-        type="email"
-        placeholder="voce@exemplo.com"
-        icon="ti-mail"
-        v-model="form.email"
-        :hasError="errors.email"
-        errorMsg="Informe um e-mail válido."
-      />
-      <AuthField
-        id="password"
-        label="Senha"
-        type="password"
-        placeholder="••••••••"
-        icon="ti-lock"
-        v-model="form.password"
-        :hasError="errors.password"
-        errorMsg="Informe sua senha."
-      />
-    </form>
+      <form class="field-group" @submit.prevent="submit">
+        <AuthField id="email" label="E-mail" type="email" placeholder="voce@exemplo.com" icon="ti-mail"
+          v-model="form.email" :hasError="errors.email" errorMsg="Informe um e-mail válido." />
+        <AuthField id="password" label="Senha" type="password" placeholder="••••••••" icon="ti-lock"
+          v-model="form.password" :hasError="errors.password" errorMsg="Informe sua senha." />
+      </form>
 
-    <div class="row-between">
-      <label class="remember">
-        <input type="checkbox" v-model="form.remember" />
-        <span>Lembrar de mim</span>
-      </label>
-      <router-link to="/recuperar-senha" class="link">Esqueceu a senha?</router-link>
-    </div>
+      <div class="row-between">
+        <label class="remember">
+          <input type="checkbox" v-model="form.remember" />
+          <span>Lembrar de mim</span>
+        </label>
+        <router-link to="/send-email" class="link">Esqueceu a senha?</router-link>
+      </div>
 
-    <button class="btn-primary" @click="submit">Entrar</button>
+      <button class="btn-primary" @click="submit">Entrar</button>
 
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span>ou continue com</span>
-      <div class="divider-line"></div>
-    </div>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span>ou continue com</span>
+        <div class="divider-line"></div>
+      </div>
 
-    <button class="btn-social" type="button">
-      <i class="ti ti-brand-google" aria-hidden="true"></i>
-      Entrar com Google
-    </button>
-    <button class="btn-social" type="button">
-      <i class="ti ti-brand-github" aria-hidden="true"></i>
-      Entrar com GitHub
-    </button>
+      <button class="btn-social" type="button">
+        <i class="ti ti-brand-google" aria-hidden="true"></i>
+        Entrar com Google
+      </button>
+      <button class="btn-social" type="button">
+        <i class="ti ti-brand-github" aria-hidden="true"></i>
+        Entrar com GitHub
+      </button>
 
-    <div class="bottom-text">
-      Não tem uma conta?
-      <router-link to="/criar-conta" class="link">Criar conta</router-link>
-    </div>
-  </AuthCard>
+      <div class="bottom-text">
+        Não tem uma conta?
+        <router-link to="/create-account" class="link">Criar conta</router-link>
+      </div>
+    </AuthCard>
+  </div>
 </template>
 
 <script setup>
@@ -79,6 +65,14 @@ function submit() {
 </script>
 
 <style scoped>
+.page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .screen-title {
   font-size: 1.35rem;
   font-weight: 600;

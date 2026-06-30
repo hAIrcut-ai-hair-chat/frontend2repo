@@ -1,116 +1,82 @@
 <template>
-  <AuthCard>
-    <div class="step-nav">
-      <div class="step-dot active"></div>
-      <div class="step-dot"></div>
-      <div class="step-dot"></div>
-    </div>
+  <div class="page">
+    <AuthCard>
+      <div class="screen-title">Crie sua conta</div>
+      <p class="screen-sub">Leva menos de 1 minutos para começar</p>
 
-    <div class="screen-title">Crie sua conta</div>
-    <p class="screen-sub">Leva menos de 2 minutos para começar.</p>
+      <form class="field-group" @submit.prevent="submit">
+        <AuthField id="nome" label="Nome" placeholder="Potássio" icon="ti-user" v-model="form.nome"
+          :hasError="errors.nome" errorMsg="Informe seu nome." />
 
-    <form class="field-group" @submit.prevent="submit">
-      <div class="name-row">
-        <AuthField
-          id="nome"
-          label="Nome"
-          placeholder="João"
-          v-model="form.nome"
-          :hasError="errors.nome"
-          errorMsg="Informe seu nome."
-        />
-        <AuthField
-          id="sobrenome"
-          label="Sobrenome"
-          placeholder="Silva"
-          v-model="form.sobrenome"
-          :hasError="errors.sobrenome"
-          errorMsg="Informe seu sobrenome."
-        />
+        <AuthField id="email" label="E-mail" type="email" placeholder="potassio@potassio.com" icon="ti-mail"
+          v-model="form.email" :hasError="errors.email" errorMsg="Informe um e-mail válido." />
+
+        <AuthField id="password" label="Senha" type="password" placeholder="Mínimo de 8 caracteres" icon="ti-lock"
+          v-model="form.password" :hasError="errors.password" errorMsg="A senha deve ter pelo menos 8 caracteres.">
+          <div class="password-strength">
+            <div class="strength-bars">
+              <div v-for="i in 4" :key="i" class="bar" :class="barClass(i)"></div>
+            </div>
+            <span class="strength-label">Força: {{ strengthLabel }}</span>
+          </div>
+        </AuthField>
+
+        <AuthField id="confirm" label="Confirmar senha" type="password" placeholder="Repita a senha"
+          icon="ti-lock-check" v-model="form.confirm" :hasError="errors.confirm" errorMsg="As senhas não coincidem." />
+      </form>
+
+      <p class="terms">
+        Ao criar uma conta, você concorda com os
+        <a class="link" tabindex="0">Termos de uso</a> e a
+        <a class="link" tabindex="0">Política de privacidade</a>.
+      </p>
+
+      <button class="btn-primary" @click="submit">Criar conta</button>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span>ou</span>
+        <div class="divider-line"></div>
       </div>
 
-      <AuthField
-        id="email"
-        label="E-mail"
-        type="email"
-        placeholder="voce@exemplo.com"
-        icon="ti-mail"
-        v-model="form.email"
-        :hasError="errors.email"
-        errorMsg="Informe um e-mail válido."
-      />
+      <button class="btn-social" type="button">
+        <i class="ti ti-brand-google" aria-hidden="true"></i>
+        Continuar com Google
+      </button>
+      <button class="btn-social" type="button">
+        <i class="ti ti-brand-github" aria-hidden="true"></i>
+        Entrar com GitHub
+      </button>
 
-      <AuthField
-        id="password"
-        label="Senha"
-        type="password"
-        placeholder="Mínimo 8 caracteres"
-        icon="ti-lock"
-        v-model="form.password"
-        :hasError="errors.password"
-        errorMsg="A senha deve ter pelo menos 8 caracteres."
-      >
-        <div class="password-strength">
-          <div class="strength-bars">
-            <div
-              v-for="i in 4"
-              :key="i"
-              class="bar"
-              :class="barClass(i)"
-            ></div>
-          </div>
-          <span class="strength-label">Força: {{ strengthLabel }}</span>
-        </div>
-      </AuthField>
-
-      <AuthField
-        id="confirm"
-        label="Confirmar senha"
-        type="password"
-        placeholder="Repita a senha"
-        icon="ti-lock-check"
-        v-model="form.confirm"
-        :hasError="errors.confirm"
-        errorMsg="As senhas não coincidem."
-      />
-    </form>
-
-    <p class="terms">
-      Ao criar uma conta, você concorda com os
-      <a class="link" tabindex="0">Termos de uso</a> e a
-      <a class="link" tabindex="0">Política de privacidade</a>.
-    </p>
-
-    <button class="btn-primary" @click="submit">Criar conta</button>
-
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span>ou</span>
-      <div class="divider-line"></div>
-    </div>
-
-    <button class="btn-social" type="button">
-      <i class="ti ti-brand-google" aria-hidden="true"></i>
-      Continuar com Google
-    </button>
-
-    <div class="bottom-text">
-      Já tem uma conta?
-      <router-link to="/login" class="link">Entrar</router-link>
-    </div>
-  </AuthCard>
+      <div class="bottom-text">
+        Já tem uma conta?
+        <router-link to="/login" class="link">Entrar</router-link>
+      </div>
+    </AuthCard>
+  </div>
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthCard from '@/components/AuthCard.vue'
 import AuthField from '@/components/AuthField.vue'
 
 const router = useRouter()
 
-const form = reactive({ nome: '', sobrenome: '', email: '', password: '', confirm: '' })
-const errors = reactive({ nome: false, sobrenome: false, email: false, password: false, confirm: false })
+const form = reactive({
+  nome: '',
+  email: '',
+  password: '',
+  confirm: ''
+})
+
+const errors = reactive({
+  nome: false,
+  email: false,
+  password: false,
+  confirm: false
+})
 
 const strengthScore = computed(() => {
   const p = form.password
@@ -136,37 +102,34 @@ function barClass(i) {
 
 function submit() {
   errors.nome = !form.nome.trim()
-  errors.sobrenome = !form.sobrenome.trim()
   errors.email = !form.email.includes('@')
   errors.password = form.password.length < 8
   errors.confirm = form.password !== form.confirm
+
   if (Object.values(errors).every(v => !v)) {
     router.push('/login')
   }
 }
+
+const showPassword = ref(false)
+
+const inputType = computed(() => {
+  if (props.type != password) {
+    return props.type
+  }
+  return showPassword.value ? 'text' : 'password'
+})
+
 </script>
 
 <style scoped>
-.step-nav {
+.page {
+  min-height: 100vh;
+  width: 100%;
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  justify-content: center;
+  align-items: center;
 }
-
-.step-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--border2);
-  transition: width 0.2s;
-}
-
-.step-dot.active {
-  background: var(--accent);
-  width: 18px;
-  border-radius: 3px;
-}
-
 .screen-title {
   font-size: 1.35rem;
   font-weight: 600;
@@ -188,12 +151,6 @@ function submit() {
   flex-direction: column;
   gap: 14px;
   margin-bottom: 16px;
-}
-
-.name-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
 }
 
 .password-strength {
@@ -221,7 +178,7 @@ function submit() {
 }
 
 .bar.strong {
-  background: var(--success);
+  background: var(--success, #00b894);
 }
 
 .strength-label {

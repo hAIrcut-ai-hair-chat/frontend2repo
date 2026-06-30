@@ -1,49 +1,43 @@
 <template>
-  <AuthCard>
-    <div class="icon-circle">
-      <i class="ti ti-mail-forward" aria-hidden="true"></i>
-    </div>
-
-    <div class="screen-title">Esqueceu sua senha?</div>
-    <p class="screen-sub">
-      Digite seu e-mail e enviaremos um link para redefinir sua senha.
-    </p>
-
-    <Transition name="fade">
-      <div v-if="sent" class="success-box">
-        <i class="ti ti-circle-check" aria-hidden="true"></i>
-        <p>E-mail enviado. Verifique sua caixa de entrada e a pasta de spam.</p>
+  <div class="page">
+    <AuthCard>
+      <div class="icon-circle">
+        <i class="ti ti-mail-forward" aria-hidden="true"></i>
       </div>
-    </Transition>
 
-    <form v-if="!sent" class="field-group" @submit.prevent="submit">
-      <AuthField
-        id="email"
-        label="E-mail cadastrado"
-        type="email"
-        placeholder="voce@exemplo.com"
-        icon="ti-mail"
-        v-model="email"
-        :hasError="hasError"
-        errorMsg="Informe um e-mail válido."
-      />
-    </form>
+      <div class="screen-title">Esqueceu sua senha?</div>
+      <p class="screen-sub">
+        Digite seu e-mail e enviaremos um link para redefinir sua senha.
+      </p>
 
-    <button v-if="!sent" class="btn-primary" @click="submit">
-      Enviar link de redefinição
-    </button>
+      <Transition name="fade">
+        <div v-if="sent" class="success-box">
+          <i class="ti ti-circle-check" aria-hidden="true"></i>
+          <p>E-mail enviado. Verifique sua caixa de entrada e a pasta de spam.</p>
+        </div>
+      </Transition>
 
-    <router-link v-if="sent" to="/redefinir-senha" class="btn-primary btn-primary--link">
-      Já tenho o código
-    </router-link>
+      <form v-if="!sent" class="field-group" @submit.prevent="submit">
+        <AuthField id="email" label="E-mail cadastrado" type="email" placeholder="voce@exemplo.com" icon="ti-mail"
+          v-model="email" :hasError="hasError" errorMsg="Informe um e-mail válido." />
+      </form>
 
-    <div class="bottom-link">
-      <router-link to="/login" class="link">
-        <i class="ti ti-arrow-left" aria-hidden="true"></i>
-        Voltar ao login
+      <button v-if="!sent" class="btn-primary" @click="submit">
+        Enviar link de redefinição
+      </button>
+
+      <router-link v-if="sent" to="/redefinir-senha" class="btn-primary btn-primary--link">
+        Já tenho o código
       </router-link>
-    </div>
-  </AuthCard>
+
+      <div class="bottom-link">
+        <router-link to="/login" class="link">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i>
+          Voltar ao login
+        </router-link>
+      </div>
+    </AuthCard>
+  </div>
 </template>
 
 <script setup>
@@ -64,6 +58,14 @@ function submit() {
 </script>
 
 <style scoped>
+.page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .icon-circle {
   width: 56px;
   height: 56px;

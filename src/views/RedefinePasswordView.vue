@@ -1,79 +1,65 @@
 <template>
-  <AuthCard>
-    <div class="icon-circle">
-      <i class="ti ti-lock-open" aria-hidden="true"></i>
-    </div>
-
-    <div class="screen-title">Crie uma nova senha</div>
-    <p class="screen-sub">
-      A senha deve ter pelo menos 8 caracteres e incluir letras e números.
-    </p>
-
-    <Transition name="fade">
-      <div v-if="success" class="success-box">
-        <i class="ti ti-circle-check" aria-hidden="true"></i>
-        <p>Senha redefinida. Você já pode entrar na sua conta.</p>
+  <div class="page">
+    <AuthCard>
+      <div class="icon-circle">
+        <i class="ti ti-lock-open" aria-hidden="true"></i>
       </div>
-    </Transition>
 
-    <form v-if="!success" class="field-group" @submit.prevent="submit">
-      <AuthField
-        id="new-pass"
-        label="Nova senha"
-        type="password"
-        placeholder="••••••••"
-        icon="ti-lock"
-        v-model="form.password"
-        :hasError="errors.password"
-        errorMsg="A senha não atende aos requisitos."
-      >
-        <div class="requirements">
-          <div class="req-item" :class="{ ok: reqs.length }">
-            <i :class="reqs.length ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
-            Mínimo de 8 caracteres
-          </div>
-          <div class="req-item" :class="{ ok: reqs.cases }">
-            <i :class="reqs.cases ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
-            Letras maiúsculas e minúsculas
-          </div>
-          <div class="req-item" :class="{ ok: reqs.number }">
-            <i :class="reqs.number ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
-            Pelo menos um número
-          </div>
-          <div class="req-item" :class="{ ok: reqs.special }">
-            <i :class="reqs.special ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
-            Pelo menos um caractere especial
-          </div>
+      <div class="screen-title">Crie uma nova senha</div>
+      <p class="screen-sub">
+        A senha deve ter pelo menos 8 caracteres e incluir letras e números.
+      </p>
+
+      <Transition name="fade">
+        <div v-if="success" class="success-box">
+          <i class="ti ti-circle-check" aria-hidden="true"></i>
+          <p>Senha redefinida. Você já pode entrar na sua conta.</p>
         </div>
-      </AuthField>
+      </Transition>
 
-      <AuthField
-        id="confirm-pass"
-        label="Confirmar nova senha"
-        type="password"
-        placeholder="••••••••"
-        icon="ti-lock-check"
-        v-model="form.confirm"
-        :hasError="errors.confirm"
-        errorMsg="As senhas não coincidem."
-      />
-    </form>
+      <form v-if="!success" class="field-group" @submit.prevent="submit">
+        <AuthField id="new-pass" label="Nova senha" type="password" placeholder="••••••••" icon="ti-lock"
+          v-model="form.password" :hasError="errors.password" errorMsg="A senha não atende aos requisitos.">
+          <div class="requirements">
+            <div class="req-item" :class="{ ok: reqs.length }">
+              <i :class="reqs.length ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
+              Mínimo de 8 caracteres
+            </div>
+            <div class="req-item" :class="{ ok: reqs.cases }">
+              <i :class="reqs.cases ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
+              Letras maiúsculas e minúsculas
+            </div>
+            <div class="req-item" :class="{ ok: reqs.number }">
+              <i :class="reqs.number ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
+              Pelo menos um número
+            </div>
+            <div class="req-item" :class="{ ok: reqs.special }">
+              <i :class="reqs.special ? 'ti ti-circle-check' : 'ti ti-circle-x'"></i>
+              Pelo menos um caractere especial
+            </div>
+          </div>
+        </AuthField>
 
-    <button v-if="!success" class="btn-primary" @click="submit">
-      Redefinir senha
-    </button>
+        <AuthField id="confirm-pass" label="Confirmar nova senha" type="password" placeholder="••••••••"
+          icon="ti-lock-check" v-model="form.confirm" :hasError="errors.confirm" errorMsg="As senhas não coincidem." />
+      </form>
 
-    <router-link v-if="success" to="/login" class="btn-primary btn-primary--link">
-      Ir para o login
-    </router-link>
+      <button v-if="!success" class="btn-primary" @click="submit">
+        Redefinir senha
+      </button>
 
-    <div class="bottom-link">
-      <router-link to="/login" class="link">
-        <i class="ti ti-arrow-left" aria-hidden="true"></i>
-        Voltar ao login
+      <router-link v-if="success" to="/login" class="btn-primary btn-primary--link">
+        Ir para o login
       </router-link>
-    </div>
-  </AuthCard>
+
+      <div class="bottom-link">
+        <router-link to="/login" class="link">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i>
+          Voltar ao login
+        </router-link>
+      </div>
+    </AuthCard>
+  </div>
 </template>
 
 <script setup>
@@ -104,6 +90,13 @@ function submit() {
 </script>
 
 <style scoped>
+.page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .icon-circle {
   width: 56px;
   height: 56px;
