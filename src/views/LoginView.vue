@@ -1,3 +1,28 @@
+<script setup>
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import AuthCard from '@/components/AuthCard.vue'
+import AuthField from '@/components/AuthField.vue'
+
+import { useAuthStore } from '@/stores/login'
+
+const router = useRouter()
+const useAuth = useAuthStore()
+
+const form = reactive({ email: '', password: '', rememberMe: false })
+const errors = reactive({ email: false, password: false })
+
+async function submit() {
+  errors.email = !form.email.includes('@')
+  errors.password = form.password.length < 1
+  if (!errors.email && !errors.password) {
+    await useAuth.login(
+      email.value,
+      password.value,
+   )
+  }
+}
+</script>
 <template>
   <div class="page">
     <AuthCard>
@@ -13,7 +38,7 @@
 
       <div class="row-between">
         <label class="remember">
-          <input type="checkbox" v-model="form.remember" />
+          <input type="checkbox" v-model="form.rememberMe" />
           <span>Lembrar de mim</span>
         </label>
         <router-link to="/send-email" class="link">Esqueceu a senha?</router-link>
@@ -44,25 +69,7 @@
   </div>
 </template>
 
-<script setup>
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import AuthCard from '@/components/AuthCard.vue'
-import AuthField from '@/components/AuthField.vue'
 
-const router = useRouter()
-
-const form = reactive({ email: '', password: '', remember: false })
-const errors = reactive({ email: false, password: false })
-
-function submit() {
-  errors.email = !form.email.includes('@')
-  errors.password = form.password.length < 1
-  if (!errors.email && !errors.password) {
-    router.push('/')
-  }
-}
-</script>
 
 <style scoped>
 .page {
