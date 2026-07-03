@@ -7,7 +7,6 @@ export const useRegisterStore = defineStore("register", () => {
 
     const email = ref('')
     const password = ref('')
-    const name = ref('')
     const response = ref(null)
     const error = ref(null)
     const loading = ref(false)

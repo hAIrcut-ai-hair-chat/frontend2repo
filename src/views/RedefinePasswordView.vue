@@ -90,33 +90,70 @@
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import AuthCard from '@/components/AuthCard.vue'
-import AuthField from '@/components/AuthField.vue'
+import { reactive, computed } from "vue"
+import { useRouter } from "vue-router"
+import { storeToRefs } from "pinia"
+
+import AuthCard from "@/components/AuthCard.vue"
+import AuthField from "@/components/AuthField.vue"
+import { useForgetPasswordStore } from "@/stores/forget_password"
 
 const router = useRouter()
 
-const form = reactive({ email: '', code: '', password: '', confirm: '' })
-const errors = reactive({ email: false, code: false, password: false, confirm: false })
+const forgetPasswordStore = useForgetPasswordStore()
+
+const { loading, error } = storeToRefs(forgetPasswordStore)
+
+const form = reactive({
+  email: "",
+  code: "",
+  password: "",
+  confirm: "",
+})
+
+const errors = reactive({
+  email: false,
+  code: false,
+  password: false,
+  confirm: false,
+})
 
 const reqs = computed(() => ({
   length: form.password.length >= 8,
-  cases: /[A-Z]/.test(form.password) && /[a-z]/.test(form.password),
+  cases:
+    /[A-Z]/.test(form.password) &&
+    /[a-z]/.test(form.password),
   number: /\d/.test(form.password),
   special: /[^A-Za-z0-9]/.test(form.password),
 }))
 
-const allReqs = computed(() => Object.values(reqs.value).every(Boolean))
+const allReqs = computed(() =>
+  Object.values(reqs.value).every(Boolean)
+)
 
-function submit() {
-  errors.email = !form.email.includes('@')
+async function submit() {
+  errors.email = !/\S+@\S+\.\S+/.test(form.email)
   errors.code = form.code.trim().length === 0
   errors.password = !allReqs.value
   errors.confirm = form.password !== form.confirm
 
-  if (!errors.email && !errors.code && !errors.password && !errors.confirm) {
-    router.push('/login')
+  if (
+    errors.email ||
+    errors.code ||
+    errors.password ||
+    errors.confirm
+  ) {
+    return
+  }
+
+  forgetPasswordStore.email = form.email
+  forgetPasswordStore.code = form.code
+  forgetPasswordStore.password = form.password
+
+  try {
+    await forgetPasswordStore.redefinePassword()
+  } catch (e) {
+    console.error(e)
   }
 }
 </script>

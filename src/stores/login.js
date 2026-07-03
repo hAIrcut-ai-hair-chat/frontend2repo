@@ -79,7 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
                 router.push("/")
             }
             return response.data
-            
+
 
         } catch (error) {
             unsetToken()
