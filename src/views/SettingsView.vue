@@ -112,7 +112,6 @@
 
           <div class="section-divider"></div>
 
-          <!-- ZONA DE PERIGO -->
           <div>
             <div class="section-hdr">
               <h3>Zona de perigo</h3>
