@@ -7,8 +7,10 @@
             <span v-if="tab === 'Work'" class="tab-count">48</span>
         </div>
         <div class="tab-settings">
-            <i class="ti ti-settings" aria-hidden="true"></i>
-            Editar perfil
+            <RouterLink to="/settings">
+                <i class="ti ti-settings" aria-hidden="true"></i>
+                settings
+            </RouterLink>
         </div>
     </div>
 </template>
@@ -90,6 +92,7 @@ defineEmits(['update:modelValue'])
     font-weight: 500;
     cursor: pointer;
     transition: background .15s, color .15s;
+    
 }
 
 .tab-settings:hover {

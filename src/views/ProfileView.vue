@@ -1,4 +1,3 @@
-<!-- Profile.vue -->
 <template>
   <div class="page">
     <TopBar />
@@ -6,7 +5,12 @@
     <Hero :user="user" :stats="stats" />
     <TabsBar v-model="activeTab" :tabs="tabs" />
     <div class="content">
-      <PostsArea :posts="posts" :activeTab="activeTab" />
+      <div class="main-area">
+        <PostArea v-if="activeTab === 'Work'" :posts="posts" />
+        <MoodBoards v-else-if="activeTab === 'Moodboards'" />
+        <Curtidos v-else-if="activeTab === 'Curtidos'" />
+        <Sobre v-else-if="activeTab === 'Sobre'" :user="user" :skills="skills" :activities="activities" />
+      </div>
       <SideBar :user="user" :skills="skills" :activities="activities" />
     </div>
   </div>
@@ -20,6 +24,9 @@ import Hero from '@/components/Hero.vue'
 import TabsBar from '@/components/TabsBar.vue'
 import PostArea from '@/components/PostArea.vue'
 import SideBar from '@/components/SideBar.vue'
+import MoodBoards from '@/components/MoodBoards.vue'
+import Curtidos from '@/components/Curtidos.vue'
+import Sobre from '@/components/Sobre.vue'
 
 const user = ref({
   name: 'João Dasilva',
@@ -61,7 +68,11 @@ const activities = [
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 :root {
   --bg: #080809;
@@ -88,7 +99,6 @@ body {
 }
 
 .page {
-  max-width: 1280px;
   margin: 0 auto;
   background: var(--bg);
   border-radius: 20px;
