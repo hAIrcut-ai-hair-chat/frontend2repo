@@ -7,7 +7,7 @@
       placeholder="No que você está pensando?"
     />
     <div class="compose-actions">
-      <i class="ti ti-photo compose-icon"></i>
+
       <i class="ti ti-mood-smile compose-icon"></i>
       <button class="post-btn" @click="publish">Publicar</button>
     </div>
@@ -16,13 +16,21 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useThinkStore } from '@/stores/think'
 
 const emit = defineEmits(['publish'])
 const text = ref('')
 
-function publish() {
+const thinkStore = useThinkStore()
+
+
+async function publish() {
   if (!text.value.trim()) return
   emit('publish', text.value.trim())
+
+  await thinkStore.addThink(
+    text.value,
+  )
   text.value = ''
 }
 </script>

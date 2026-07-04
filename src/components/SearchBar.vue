@@ -44,7 +44,7 @@ const isFocused = ref(false)
   border-radius: 20px;
   padding: 4px 14px;
   transition: border-color .15s;
-  width: 220px;
+  width: 500px;
 }
 .search-bar:focus-within {
   border-color: var(--accent);
@@ -63,7 +63,7 @@ const isFocused = ref(false)
   font-family: var(--font);
   font-size: .85rem;
   padding: 6px 0;
-  width: 100%;
+  width: 500px;
 }
 .search-bar input::placeholder {
   color: var(--txt3);
