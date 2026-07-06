@@ -6,7 +6,7 @@
       <input
         type="text"
         v-model="text"
-        placeholder="No que você está pensando?"
+        placeholder="Faça uma postagem aqui..."
         @keydown.enter.prevent="publish"
         :disabled="isLoading"
       />
@@ -22,8 +22,8 @@
       <div class="compose-actions">
         <i
           class="ti ti-mood-smile compose-icon"
-          @click="toggleEmoji"
           :class="{ active: showEmoji }"
+          @click="toggleEmoji"
         ></i>
 
         <i
@@ -33,7 +33,12 @@
 
         <div v-if="imagePreview" class="image-preview-thumb">
           <img :src="imagePreview" alt="Prévia" />
-          <button class="remove-image-thumb" @click="removeImage" type="button">
+
+          <button
+            type="button"
+            class="remove-image-thumb"
+            @click="removeImage"
+          >
             <i class="ti ti-x"></i>
           </button>
         </div>
@@ -43,14 +48,14 @@
           @click="publish"
           :disabled="isLoading || (!text.trim() && !image)"
         >
-          <span v-if="isLoading">Publicando…</span>
+          <span v-if="isLoading">Publicando...</span>
           <span v-else>Publicar</span>
         </button>
       </div>
     </div>
 
-    <div v-if="showEmoji" class="emoji-picker" @click.stop>
-      <emoji-picker @emoji-click="addEmoji" />
+    <div v-if="showEmoji" class="emoji-picker">
+      <emoji-picker @emoji-click="addEmoji"></emoji-picker>
     </div>
 
     <div v-if="errorMessage" class="error-message">
@@ -61,15 +66,19 @@
 
 <script setup>
 import { ref } from "vue";
-import { useThinkStore } from "@/stores/think";
+import { usePostsStore } from "@/stores/post";
+import { useUploaderStore } from "@/stores/uploader";
 
-const thinkStore = useThinkStore();
+const postStore = usePostsStore();
+const uploaderStore = useUploaderStore();
 
 const text = ref("");
 const showEmoji = ref(false);
+
 const imageInput = ref(null);
 const image = ref(null);
 const imagePreview = ref(null);
+
 const isLoading = ref(false);
 const errorMessage = ref("");
 
@@ -82,15 +91,16 @@ function addEmoji(event) {
 }
 
 function openImagePicker() {
-  imageInput.value.click();
+  imageInput.value?.click();
 }
 
 function handleImage(event) {
   const file = event.target.files[0];
+
   if (!file) return;
 
   if (!file.type.startsWith("image/")) {
-    errorMessage.value = "Por favor, selecione uma imagem válida.";
+    errorMessage.value = "Selecione uma imagem válida.";
     return;
   }
 
@@ -100,19 +110,21 @@ function handleImage(event) {
 }
 
 function removeImage() {
+  if (imagePreview.value) {
+    URL.revokeObjectURL(imagePreview.value);
+  }
+
   image.value = null;
   imagePreview.value = null;
+
   if (imageInput.value) {
     imageInput.value.value = "";
   }
 }
 
 async function publish() {
-  const hasText = text.value.trim().length > 0;
-  const hasImage = !!image.value;
-
-  if (!hasText && !hasImage) {
-    errorMessage.value = "Escreva algo ou adicione uma imagem.";
+  if (!text.value.trim() && !image.value) {
+    errorMessage.value = "Escreva algo ou escolha uma imagem.";
     return;
   }
 
@@ -121,21 +133,18 @@ async function publish() {
   isLoading.value = true;
   errorMessage.value = "";
 
-  try {
-    const formData = new FormData();
-    formData.append("text", text.value.trim());
-    if (image.value) {
-      formData.append("image", image.value);
-    }
-
-    await thinkStore.addThink(formData);
+  try { 
+    await postStore.addPost(
+      text.value.trim(),
+      image.value,
+    );
 
     text.value = "";
     showEmoji.value = false;
     removeImage();
-  } catch (error) {
-    console.error("Erro ao publicar:", error);
-    errorMessage.value = "Não foi possível publicar. Tente novamente.";
+  } catch (err) {
+    console.error(err);
+    errorMessage.value = "Erro ao publicar.";
   } finally {
     isLoading.value = false;
   }
@@ -152,7 +161,7 @@ async function publish() {
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
-  transition: border-color 0.2s;
+  transition: border-color .2s;
   position: relative;
 }
 
@@ -170,13 +179,13 @@ async function publish() {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
   font-size: 11px;
   font-weight: 600;
-  color: #fff;
   flex-shrink: 0;
 }
 
@@ -187,17 +196,11 @@ async function publish() {
   outline: none;
   color: var(--txt);
   font-family: var(--font);
-  font-size: 0.88rem;
-  font-weight: 300;
+  font-size: .9rem;
 }
 
 .compose input[type="text"]::placeholder {
   color: var(--txt3);
-}
-
-.compose input[type="text"]:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .compose-actions {
@@ -207,14 +210,14 @@ async function publish() {
 }
 
 .compose-icon {
-  color: var(--txt3);
   font-size: 20px;
+  color: var(--txt3);
   cursor: pointer;
-  transition: color 0.15s;
+  transition: .2s;
 }
 
 .compose-icon:hover {
-  color: var(--txt2);
+  color: var(--txt);
 }
 
 .compose-icon.active {
@@ -223,9 +226,8 @@ async function publish() {
 
 .image-preview-thumb {
   position: relative;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -235,7 +237,6 @@ async function publish() {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .remove-image-thumb {
@@ -246,49 +247,31 @@ async function publish() {
   height: 18px;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0,0,0,.8);
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  padding: 0;
-  transition: background 0.15s;
-}
-
-.remove-image-thumb:hover {
-  background: rgba(0, 0, 0, 0.95);
-}
-
-.remove-image-thumb i {
-  font-size: 12px;
 }
 
 .post-btn {
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: var(--accent);
   border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  background: var(--accent);
   color: #03122e;
-  font-family: var(--font);
-  font-size: 0.8rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-  white-space: nowrap;
+  font-weight: 600;
+  transition: .2s;
 }
 
 .post-btn:hover:not(:disabled) {
-  opacity: 0.88;
-}
-
-.post-btn:active:not(:disabled) {
-  transform: scale(0.97);
+  opacity: .9;
 }
 
 .post-btn:disabled {
-  opacity: 0.5;
+  opacity: .5;
   cursor: not-allowed;
 }
 
@@ -297,15 +280,10 @@ async function publish() {
   top: calc(100% + 8px);
   right: 0;
   z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .error-message {
   color: #ff6b6b;
-  font-size: 0.8rem;
-  padding: 4px 0 0 0;
-  font-weight: 400;
+  font-size: .8rem;
 }
 </style>
