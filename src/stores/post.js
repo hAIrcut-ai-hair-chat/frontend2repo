@@ -22,16 +22,13 @@ export const usePostsStore = defineStore("posts", () => {
 
             if (image) {
                 uploadedImage = await uploader.addUploader(image);
-                console.log("Imagem enviada:", uploadedImage);
             }
-            alert(typeof text)
+
             const payload = {
                 text,
                 user: 1,
-                image: uploadedImage?.uuid ?? null,
+                image: uploadedImage?.attachment_key ?? null
             };
-
-            console.log("Payload:", payload);
 
             const { data } = await api.post("/posts/", payload);
 
