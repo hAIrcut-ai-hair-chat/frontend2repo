@@ -25,8 +25,7 @@ export const usePostsStore = defineStore("posts", () => {
             }
 
             const payload = {
-                text,
-                user: 1,
+                text: text,
                 image: uploadedImage?.attachment_key ?? null
             };
 
