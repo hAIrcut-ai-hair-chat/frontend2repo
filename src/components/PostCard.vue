@@ -1,112 +1,259 @@
 <template>
-  <article class="post">
-    <div class="post-hdr">
-      <img v-if="post.avatar" :src="post.avatar" :alt="post.user" class="avi" />
-      <div
-        v-else
-        class="avi avi-grad"
-        :style="{ background: post.gradient }"
-      >
-        {{ post.initials }}
-      </div>
+  <div class="post-feed">
+    <article v-for="post in posts" :key="post.id" class="post">
+      <div class="post-hdr">
+        <img v-if="post.avatar" :src="post.avatar" :alt="post.user" class="avi" />
+        <div v-else class="avi avi-grad" :style="{ background: post.avatarColor }">
+          {{ post.initials }}
+        </div>
 
-      <div class="post-meta">
-        <div class="post-name">{{ post.user }}</div>
-        <div class="post-sub">
-          <i class="ti ti-clock" style="font-size:12px"></i>
-          {{ post.time }} · {{ post.category }}
+        <div class="post-meta">
+          <div class="post-name">{{ post.user }}</div>
+          <div class="post-sub">
+            <i class="ti ti-clock" style="font-size:12px"></i>
+            {{ post.time }} · {{ post.category }}
+          </div>
+        </div>
+
+        <div class="more-btn">
+          <i class="ti ti-dots"></i>
         </div>
       </div>
 
-      <div class="more-btn">
-        <i class="ti ti-dots"></i>
+      <div class="post-tags">
+        <span v-for="tag in post.tags" :key="tag.label" class="tag" :class="`tag-${tag.type}`">
+          {{ tag.label }}
+        </span>
       </div>
-    </div>
 
-    <div class="post-tags">
-      <span
-        v-for="tag in post.tags"
-        :key="tag.label"
-        class="tag"
-        :class="`tag-${tag.type}`"
-      >
-        {{ tag.label }}
-      </span>
-    </div>
+      <img v-if="post.image" :src="post.image" class="post-img" :alt="`Post de ${post.user}`" />
 
-    <img
-      v-if="post.image"
-      :src="post.image"
-      class="post-img"
-      :alt="`Post de ${post.user}`"
-    />
-    <div v-else class="post-img-ph" :class="post.imageClass">
-      <i :class="`ti ${post.imageIcon} ph-icon`"></i>
-    </div>
-
-    <div class="actions">
-      <button
-        class="act-btn"
-        :class="{ liked: post.liked }"
-        @click="toggleLike"
-        :aria-label="`Curtir (${formatCount(localLikes)} curtidas)`"
-      >
-        <i :class="post.liked ? 'ti ti-heart-filled' : 'ti ti-heart'"></i>
-        {{ formatCount(localLikes) }}
-      </button>
-
-      <button class="act-btn" :aria-label="`Comentar (${post.comments} comentários)`">
-        <i class="ti ti-message-circle"></i>
-        {{ post.comments }}
-      </button>
-
-      <div class="act-spacer"></div>
-
-      <button
-        class="act-btn"
-        :class="{ bookmarked: post.bookmarked }"
-        @click="toggleBookmark"
-        aria-label="Salvar"
-      >
-        <i :class="post.bookmarked ? 'ti ti-bookmark-filled' : 'ti ti-bookmark'"></i>
-      </button>
-
-      <button class="share-btn" aria-label="Compartilhar">
-        <i class="ti ti-share"></i>
-        Compartilhar
-      </button>
-
-      <button class="act-btn delete-btn" @click="$emit('delete')" aria-label="Excluir post">
-        <i class="ti ti-trash"></i>
-      </button>
-    </div>
-
-    <div class="info">
-      <div class="likes">{{ formatCount(localLikes) }} curtidas</div>
-      <div class="caption">
-        <strong>{{ post.user }}</strong>
-        {{ post.caption }}
+      <div v-else class="post-img-ph" :class="post.imageClass">
+        <i :class="`ti ${post.imageIcon} ph-icon`"></i>
       </div>
-      <div class="time">{{ post.time2 }}</div>
+      <div class="actions">
+        <button class="act-btn" :class="{ liked: post.liked }" @click="toggleLike(post)"
+          :aria-label="`Curtir (${formatCount(post.likes)} curtidas)`">
+          <i :class="post.liked ? 'ti ti-heart-filled' : 'ti ti-heart'"></i>
+          {{ formatCount(post.likes) }}
+        </button>
+
+        <button class="act-btn" :aria-label="`Comentar (${post.comments} comentários)`">
+          <i class="ti ti-message-circle"></i>
+          {{ post.comments }}
+        </button>
+
+        <div class="act-spacer"></div>
+
+        <button class="act-btn" :class="{ bookmarked: post.bookmarked }" @click="toggleBookmark(post)"
+          aria-label="Salvar">
+          <i :class="post.bookmarked ? 'ti ti-bookmark-filled' : 'ti ti-bookmark'"></i>
+        </button>
+
+        <button class="share-btn" aria-label="Compartilhar">
+          <i class="ti ti-share"></i>
+          Compartilhar
+        </button>
+
+        <button class="act-btn delete-btn" @click="$emit('delete', post.id)" aria-label="Excluir post">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>
+
+      <div class="info">
+        <div class="likes">{{ formatCount(post.likes) }} curtidas</div>
+        <div class="caption">
+          <strong>{{ post.user }}</strong>
+          {{ post.caption }}
+        </div>
+        <div class="time">{{ post.time2 }}</div>
+      </div>
+    </article>
+
+    <div v-if="loadError" class="loading-placeholder error-placeholder">
+      <i class="ti ti-alert-circle"></i> Erro ao carregar posts: {{ loadError }}
     </div>
-  </article>
+
+    <div v-else-if="loading" class="loading-placeholder">
+      <i class="ti ti-loader spinning"></i> Carregando posts...
+    </div>
+
+    <div v-else-if="!posts.length" class="loading-placeholder">
+      <i class="ti ti-mood-empty"></i> Nenhum post encontrado.
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { usePostsStore } from '@/stores/post'
 
-const props = defineProps({ post: Object })
-defineEmits(['delete'])
+const MAX_POSTS = 50
 
-const localLikes = ref(props.post.likes)
+const postStore = usePostsStore()
+const posts = ref([])
+const loading = ref(true)
+const loadError = ref(null)
 
-function toggleLike() {
-  props.post.liked = !props.post.liked
-  localLikes.value += props.post.liked ? 1 : -1
+const AVATAR_GRADIENTS = [
+  'linear-gradient(135deg, #7c9eff, #a78bfa)',
+  'linear-gradient(135deg, #f472b6, #a78bfa)',
+  'linear-gradient(135deg, #34d399, #22d3ee)',
+  'linear-gradient(135deg, #fb923c, #f472b6)',
+  'linear-gradient(135deg, #60a5fa, #34d399)'
+]
+
+function getAvatarColor(seed) {
+  if (!seed) return AVATAR_GRADIENTS[0]
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length]
 }
 
-function toggleBookmark() {
-  props.post.bookmarked = !props.post.bookmarked
+function getInitials(name) {
+  if (!name) return '?'
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join('')
+}
+
+function formatTime(isoDate) {
+  if (!isoDate) return ''
+  const date = new Date(isoDate)
+  if (isNaN(date.getTime())) return ''
+  const diffMs = Date.now() - date.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return 'agora'
+  if (diffMin < 60) return `${diffMin}min`
+  const diffH = Math.floor(diffMin / 60)
+  if (diffH < 24) return `${diffH}h`
+  const diffD = Math.floor(diffH / 24)
+  if (diffD < 7) return `${diffD}d`
+  return date.toLocaleDateString('pt-BR')
+}
+
+function formatFullTime(isoDate) {
+  if (!isoDate) return ''
+  const date = new Date(isoDate)
+  if (isNaN(date.getTime())) return ''
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function mapPost(raw) {
+  if (!raw) return null
+
+  const rawUser = raw.user || {}
+  const rawImage = raw.image || null
+
+  const userName =
+    rawUser.nome ||
+    rawUser.name ||
+    rawUser.email ||
+    'Usuário'
+
+  console.log("POST RAW:", raw)
+  console.log("IMAGEM RAW:", rawImage)
+
+  const imageUrl =
+    typeof rawImage === "string"
+      ? rawImage
+      : rawImage?.file || null
+
+  console.log("URL IMAGEM:", imageUrl)
+
+  return {
+    id: raw.id ?? raw.pk,
+
+    user: userName,
+
+    avatar: rawUser.avatar || null,
+
+    initials: getInitials(userName),
+
+    avatarColor: getAvatarColor(userName),
+
+    time: formatTime(raw.uploaded_on),
+
+    time2: formatFullTime(raw.uploaded_on),
+
+    category: raw.category || '',
+
+    tags: raw.tags || [],
+
+    image: imageUrl,
+
+    imageClass: raw.imageClass || 'ph-1',
+
+    imageIcon: raw.imageIcon || 'ti-photo',
+
+    liked: raw.liked ?? false,
+
+    likes: raw.likes ?? 0,
+
+    comments: raw.comments ?? 0,
+
+    bookmarked: raw.bookmarked ?? false,
+
+    caption: raw.text || ''
+  }
+}
+
+async function loadPosts() {
+  loading.value = true
+  loadError.value = null
+
+  try {
+    const response = await postStore.getPost()
+
+    console.log("Resposta API:", response)
+
+    const rawPosts = Array.isArray(response)
+      ? response
+      : (response?.results ?? [])
+
+    posts.value = rawPosts
+      .slice(0, MAX_POSTS)
+      .map(mapPost)
+      .filter(Boolean)
+
+    console.log("Posts renderizados:", posts.value)
+
+  } catch (error) {
+    console.error("Erro ao carregar posts:", error)
+
+    loadError.value =
+      error?.message ||
+      "Falha ao carregar posts"
+
+    posts.value = []
+
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadPosts()
+})
+
+function toggleLike(post) {
+  post.liked = !post.liked
+  post.likes += post.liked ? 1 : -1
+}
+
+function toggleBookmark(post) {
+  post.bookmarked = !post.bookmarked
 }
 
 function formatCount(n) {
@@ -122,6 +269,8 @@ function formatCount(n) {
   border: 1px solid var(--border);
   overflow: hidden;
   transition: border-color 0.2s;
+  top: 10px;
+  margin-top: 10px;
 }
 
 .post:hover {
@@ -165,9 +314,9 @@ function formatCount(n) {
 }
 
 .post-sub {
-  font-size: 0.72rem;
   color: var(--txt3);
   display: flex;
+  font-size: 0.72rem;
   align-items: center;
   gap: 4px;
 }
@@ -370,5 +519,29 @@ function formatCount(n) {
   color: var(--txt3);
   margin-top: 4px;
   letter-spacing: 0.01em;
+}
+
+.loading-placeholder {
+  padding: 1rem;
+  text-align: center;
+  color: #888;
+}
+
+.error-placeholder {
+  color: #f87171;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
