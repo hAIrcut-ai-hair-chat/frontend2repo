@@ -5,6 +5,8 @@ import CreateAccountView from '@/views/CreateAccountView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RedefinePasswordView from '@/views/RedefinePasswordView.vue'
 import SendEmailView from '@/views/SendEmailView.vue'
+import ProfileView from '@/views/ProfileView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 const routes = [
   {
@@ -32,6 +34,16 @@ const routes = [
     path: "/send-email",
     name: "SendEmail",
     component: SendEmailView
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: ProfileView
+  },
+  {
+    path: "/settings",
+    name: "Settings",
+    component: SettingsView
   }
 ]
 

@@ -18,7 +18,7 @@
         <i class="ti ti-bell"></i>
         <div class="notif-dot"></div>
       </div>
-      <div class="avatar-sm">JD</div>
+      <RouterLink to="/profile" class="avatar-sm">JD</RouterLink>
     </div>
   </header>
 </template>

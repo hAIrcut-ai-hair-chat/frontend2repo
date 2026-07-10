@@ -1,8 +1,8 @@
 <template>
   <div class="auth-card">
     <div class="logo-wrap">
-      <div class="logo-mark">N</div>
-      <span class="logo-name">Nova</span>
+      <div class="ti ti-cube"></div>
+      <span class="logo-name">Geekours</span>
     </div>
     <slot />
   </div>

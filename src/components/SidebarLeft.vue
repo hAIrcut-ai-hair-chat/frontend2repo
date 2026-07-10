@@ -1,8 +1,9 @@
 <template>
   <nav class="sidebar">
-    <div
+    <RouterLink
       v-for="item in navItems"
       :key="item.label"
+      :to="item.route"
       class="nav-item"
       :class="{ active: item.active }"
       @click="setActive(item)"
@@ -10,7 +11,7 @@
       <i :class="`ti ${item.icon}`"></i>
       {{ item.label }}
       <span v-if="item.badge" class="badge">{{ item.badge }}</span>
-    </div>
+    </RouterLink>
 
     <div class="nav-section">Coleções</div>
 
@@ -29,20 +30,76 @@
 
 <script setup>
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 const navItems = ref([
-  { label: 'Início', icon: 'ti-home', active: true, badge: null },
-  { label: 'Explorar', icon: 'ti-compass', active: false, badge: null },
-  { label: 'Notificações', icon: 'ti-bell', active: false, badge: 4 },
-  { label: 'Mensagens', icon: 'ti-message-2', active: false, badge: null },
-  { label: 'Salvos', icon: 'ti-bookmark', active: false, badge: null },
-  { label: 'Perfil', icon: 'ti-user', active: false, badge: null },
+  { 
+    label: 'Início', 
+    icon: 'ti-home', 
+    active: true, 
+    badge: null,
+    route: '/'
+  },
+  { 
+    label: 'Explorar', 
+    icon: 'ti-compass', 
+    active: false, 
+    badge: null,
+    route: '/explorar'
+  },
+  { 
+    label: 'Notificações', 
+    icon: 'ti-bell', 
+    active: false, 
+    badge: 4,
+    route: '/notificacoes'
+  },
+  { 
+    label: 'Mensagens', 
+    icon: 'ti-message-2', 
+    active: false, 
+    badge: null,
+    route: '/mensagens'
+  },
+  { 
+    label: 'Salvos', 
+    icon: 'ti-bookmark', 
+    active: false, 
+    badge: null,
+    route: '/salvos'
+  },
+  { 
+    label: 'Perfil', 
+    icon: 'ti-user', 
+    active: false, 
+    badge: null,
+    route: '/profile'
+  },
+  {
+    label: 'Login',
+    icon: 'ti-lock',
+    active: false,
+    badge: null,
+    route: '/login'
+  }
 ])
 
 const collections = ref([
-  { label: 'Design', icon: 'ti-palette', active: false },
-  { label: 'Dev', icon: 'ti-code', active: false },
-  { label: 'Fotografia', icon: 'ti-photo', active: false },
+  { 
+    label: 'Design', 
+    icon: 'ti-palette', 
+    active: false 
+  },
+  { 
+    label: 'Dev', 
+    icon: 'ti-code', 
+    active: false 
+  },
+  { 
+    label: 'Fotografia', 
+    icon: 'ti-photo', 
+    active: false 
+  },
 ])
 
 function setActive(clicked) {
@@ -72,6 +129,7 @@ function setActive(clicked) {
   color: var(--txt2);
   font-size: 0.88rem;
   transition: background 0.15s, color 0.15s;
+  text-decoration: none;
 }
 
 .nav-item:hover {
@@ -108,6 +166,8 @@ function setActive(clicked) {
 }
 
 @media (max-width: 960px) {
-  .sidebar { display: none; }
+  .sidebar { 
+    display: none; 
+  }
 }
 </style>
