@@ -85,12 +85,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { usePostsStore } from '@/stores/post'
+import { useFeedStore } from '@/stores/postSocket'
 
 const MAX_POSTS = 50
 
 const postStore = usePostsStore()
+const feedStore = useFeedStore()
+
 const posts = ref([])
 const loading = ref(true)
 const loadError = ref(null)
@@ -103,17 +106,23 @@ const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #60a5fa, #34d399)'
 ]
 
+
 function getAvatarColor(seed) {
   if (!seed) return AVATAR_GRADIENTS[0]
+
   let hash = 0
+
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash)
   }
+
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length]
 }
 
+
 function getInitials(name) {
   if (!name) return '?'
+
   return name
     .trim()
     .split(/\s+/)
@@ -122,57 +131,62 @@ function getInitials(name) {
     .join('')
 }
 
+
 function formatTime(isoDate) {
   if (!isoDate) return ''
+
   const date = new Date(isoDate)
+
   if (isNaN(date.getTime())) return ''
+
   const diffMs = Date.now() - date.getTime()
   const diffMin = Math.floor(diffMs / 60000)
+
   if (diffMin < 1) return 'agora'
   if (diffMin < 60) return `${diffMin}min`
+
   const diffH = Math.floor(diffMin / 60)
+
   if (diffH < 24) return `${diffH}h`
-  const diffD = Math.floor(diffH / 24)
-  if (diffD < 7) return `${diffD}d`
+
   return date.toLocaleDateString('pt-BR')
 }
 
+
 function formatFullTime(isoDate) {
   if (!isoDate) return ''
+
   const date = new Date(isoDate)
+
   if (isNaN(date.getTime())) return ''
-  return date.toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+
+  return date.toLocaleString('pt-BR')
 }
 
+
+
 function mapPost(raw) {
+
   if (!raw) return null
 
+
   const rawUser = raw.user || {}
-  const rawImage = raw.image || null
 
   const userName =
     rawUser.nome ||
     rawUser.name ||
     rawUser.email ||
-    'Usuário'
+    "Usuário"
 
-  console.log("POST RAW:", raw)
-  console.log("IMAGEM RAW:", rawImage)
 
   const imageUrl =
-    typeof rawImage === "string"
-      ? rawImage
-      : rawImage?.file || null
+    typeof raw.image === "string"
+      ? raw.image
+      : raw.image?.file || null
 
-  console.log("URL IMAGEM:", imageUrl)
 
   return {
+
     id: raw.id ?? raw.pk,
 
     user: userName,
@@ -206,60 +220,140 @@ function mapPost(raw) {
     bookmarked: raw.bookmarked ?? false,
 
     caption: raw.text || ''
+
   }
 }
 
+
+
 async function loadPosts() {
+
   loading.value = true
-  loadError.value = null
 
   try {
+
     const response = await postStore.getPost()
 
-    console.log("Resposta API:", response)
 
     const rawPosts = Array.isArray(response)
       ? response
-      : (response?.results ?? [])
+      : response?.results ?? []
+
 
     posts.value = rawPosts
       .slice(0, MAX_POSTS)
       .map(mapPost)
       .filter(Boolean)
 
-    console.log("Posts renderizados:", posts.value)
 
-  } catch (error) {
-    console.error("Erro ao carregar posts:", error)
+  } catch(error){
+
+    console.error(error)
 
     loadError.value =
-      error?.message ||
-      "Falha ao carregar posts"
+      error.message ||
+      "Erro ao carregar posts"
 
-    posts.value = []
 
   } finally {
+
     loading.value = false
+
   }
+
 }
 
-onMounted(() => {
-  loadPosts()
+
+
+
+function receiveSocketPosts(){
+
+  feedStore.posts.forEach(rawPost => {
+
+    const post = mapPost(rawPost)
+
+    if(!post) return
+
+
+    const exists = posts.value.some(
+      item => item.id === post.id
+    )
+
+
+    if(!exists){
+
+      posts.value.unshift(post)
+
+    }
+
+  })
+
+}
+
+
+
+onMounted(async()=>{
+
+
+  await loadPosts()
+
+
+  // conecta websocket
+  feedStore.connect("global")
+
+
+  // verifica novos posts a cada atualização
+  setInterval(()=>{
+
+    receiveSocketPosts()
+
+  },500)
+
+
 })
 
-function toggleLike(post) {
+
+
+onUnmounted(()=>{
+
+  feedStore.disconnect()
+
+})
+
+
+
+
+function toggleLike(post){
+
   post.liked = !post.liked
+
   post.likes += post.liked ? 1 : -1
+
 }
 
-function toggleBookmark(post) {
+
+
+function toggleBookmark(post){
+
   post.bookmarked = !post.bookmarked
+
 }
 
-function formatCount(n) {
-  if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + ' mil'
+
+
+function formatCount(n){
+
+  if(n >= 1000)
+
+    return (n / 1000)
+      .toFixed(1)
+      .replace('.0','') + ' mil'
+
+
   return String(n)
+
 }
+
 </script>
 
 <style scoped>

@@ -55,11 +55,11 @@ const navItems = ref([
     route: '/notificacoes'
   },
   { 
-    label: 'Mensagens', 
+    label: 'Chat', 
     icon: 'ti-message-2', 
     active: false, 
     badge: null,
-    route: '/mensagens'
+    route: '/chat'
   },
   { 
     label: 'Salvos', 
@@ -81,7 +81,7 @@ const navItems = ref([
     active: false,
     badge: null,
     route: '/login'
-  }
+  },
 ])
 
 const collections = ref([

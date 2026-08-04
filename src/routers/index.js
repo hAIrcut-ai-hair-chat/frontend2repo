@@ -7,6 +7,7 @@ import RedefinePasswordView from '@/views/RedefinePasswordView.vue'
 import SendEmailView from '@/views/SendEmailView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import Stories from '@/views/Stories.vue'
 
 const routes = [
   {
@@ -44,6 +45,12 @@ const routes = [
     path: "/settings",
     name: "Settings",
     component: SettingsView
+  },
+  {
+    path: "/stories",
+    name: "Stories",
+    component: Stories,
+
   }
 ]
 
