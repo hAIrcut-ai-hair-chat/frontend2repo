@@ -93,17 +93,6 @@
       </div>
 
     </div>
-
-    <div class="share-row">
-      <div class="share-avatar">{{ userInitials }}</div>
-      <button class="share-btn-main" @click="shareStory">
-        <i class="ti ti-send" aria-hidden="true"></i>
-        Compartilhar story
-      </button>
-      <div class="close-share" aria-label="Descartar" @click="$emit('discard')">
-        <i class="ti ti-trash" aria-hidden="true"></i>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -117,7 +106,7 @@ const flashOn = ref(false)
 const timerOptions = [0, 3, 10]
 const timerIndex = ref(0)
 
-const storyText = ref('Bom dia ✨')
+const storyText = ref('ManoPotas esteve aqui')
 const showLocation = ref(true)
 const location = ref('Joinville, SC')
 const showMusic = ref(true)

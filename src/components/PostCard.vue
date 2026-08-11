@@ -1,101 +1,19 @@
-<template>
-  <div class="post-feed">
-    <article v-for="post in posts" :key="post.id" class="post">
-      <div class="post-hdr">
-        <img v-if="post.avatar" :src="post.avatar" :alt="post.user" class="avi" />
-        <div v-else class="avi avi-grad" :style="{ background: post.avatarColor }">
-          {{ post.initials }}
-        </div>
-
-        <div class="post-meta">
-          <div class="post-name">{{ post.user }}</div>
-          <div class="post-sub">
-            <i class="ti ti-clock" style="font-size:12px"></i>
-            {{ post.time }} · {{ post.category }}
-          </div>
-        </div>
-
-        <div class="more-btn">
-          <i class="ti ti-dots"></i>
-        </div>
-      </div>
-
-      <div class="post-tags">
-        <span v-for="tag in post.tags" :key="tag.label" class="tag" :class="`tag-${tag.type}`">
-          {{ tag.label }}
-        </span>
-      </div>
-
-      <img v-if="post.image" :src="post.image" class="post-img" :alt="`Post de ${post.user}`" />
-
-      <div v-else class="post-img-ph" :class="post.imageClass">
-        <i :class="`ti ${post.imageIcon} ph-icon`"></i>
-      </div>
-      <div class="actions">
-        <button class="act-btn" :class="{ liked: post.liked }" @click="toggleLike(post)"
-          :aria-label="`Curtir (${formatCount(post.likes)} curtidas)`">
-          <i :class="post.liked ? 'ti ti-heart-filled' : 'ti ti-heart'"></i>
-          {{ formatCount(post.likes) }}
-        </button>
-
-        <button class="act-btn" :aria-label="`Comentar (${post.comments} comentários)`">
-          <i class="ti ti-message-circle"></i>
-          {{ post.comments }}
-        </button>
-
-        <div class="act-spacer"></div>
-
-        <button class="act-btn" :class="{ bookmarked: post.bookmarked }" @click="toggleBookmark(post)"
-          aria-label="Salvar">
-          <i :class="post.bookmarked ? 'ti ti-bookmark-filled' : 'ti ti-bookmark'"></i>
-        </button>
-
-        <button class="share-btn" aria-label="Compartilhar">
-          <i class="ti ti-share"></i>
-          Compartilhar
-        </button>
-
-        <button class="act-btn delete-btn" @click="$emit('delete', post.id)" aria-label="Excluir post">
-          <i class="ti ti-trash"></i>
-        </button>
-      </div>
-
-      <div class="info">
-        <div class="likes">{{ formatCount(post.likes) }} curtidas</div>
-        <div class="caption">
-          <strong>{{ post.user }}</strong>
-          {{ post.caption }}
-        </div>
-        <div class="time">{{ post.time2 }}</div>
-      </div>
-    </article>
-
-    <div v-if="loadError" class="loading-placeholder error-placeholder">
-      <i class="ti ti-alert-circle"></i> Erro ao carregar posts: {{ loadError }}
-    </div>
-
-    <div v-else-if="loading" class="loading-placeholder">
-      <i class="ti ti-loader spinning"></i> Carregando posts...
-    </div>
-
-    <div v-else-if="!posts.length" class="loading-placeholder">
-      <i class="ti ti-mood-empty"></i> Nenhum post encontrado.
-    </div>
-  </div>
-</template>
-
+```vue
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { usePostsStore } from '@/stores/post'
+import {
+  ref,
+  onMounted,
+  onUnmounted
+} from 'vue'
+
 import { useFeedStore } from '@/stores/postSocket'
 
 const MAX_POSTS = 50
 
-const postStore = usePostsStore()
 const feedStore = useFeedStore()
 
-const posts = ref([])
 const loading = ref(true)
+
 const loadError = ref(null)
 
 const AVATAR_GRADIENTS = [
@@ -106,254 +24,249 @@ const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #60a5fa, #34d399)'
 ]
 
+const posts = feedStore.posts
 
 function getAvatarColor(seed) {
-  if (!seed) return AVATAR_GRADIENTS[0]
+  if (!seed) {
+    return AVATAR_GRADIENTS[0]
+  }
 
   let hash = 0
 
   for (let i = 0; i < seed.length; i++) {
-    hash = seed.charCodeAt(i) + ((hash << 5) - hash)
+    hash =
+      seed.charCodeAt(i) +
+      ((hash << 5) - hash)
   }
 
-  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length]
+  return AVATAR_GRADIENTS[
+    Math.abs(hash) %
+    AVATAR_GRADIENTS.length
+  ]
 }
 
-
 function getInitials(name) {
-  if (!name) return '?'
+  if (!name) {
+    return '?'
+  }
 
   return name
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part[0]?.toUpperCase())
+    .map(
+      part =>
+        part[0]?.toUpperCase()
+    )
     .join('')
 }
 
-
 function formatTime(isoDate) {
-  if (!isoDate) return ''
+  if (!isoDate) {
+    return ''
+  }
 
   const date = new Date(isoDate)
 
-  if (isNaN(date.getTime())) return ''
+  if (isNaN(date.getTime())) {
+    return ''
+  }
 
-  const diffMs = Date.now() - date.getTime()
-  const diffMin = Math.floor(diffMs / 60000)
+  const diffMs =
+    Date.now() -
+    date.getTime()
 
-  if (diffMin < 1) return 'agora'
-  if (diffMin < 60) return `${diffMin}min`
+  const diffMin =
+    Math.floor(
+      diffMs / 60000
+    )
 
-  const diffH = Math.floor(diffMin / 60)
+  if (diffMin < 1) {
+    return 'agora'
+  }
 
-  if (diffH < 24) return `${diffH}h`
+  if (diffMin < 60) {
+    return `${diffMin}min`
+  }
 
-  return date.toLocaleDateString('pt-BR')
+  const diffH =
+    Math.floor(
+      diffMin / 60
+    )
+
+  if (diffH < 24) {
+    return `${diffH}h`
+  }
+
+  return date.toLocaleDateString(
+    'pt-BR'
+  )
 }
-
 
 function formatFullTime(isoDate) {
-  if (!isoDate) return ''
+  if (!isoDate) {
+    return ''
+  }
 
   const date = new Date(isoDate)
 
-  if (isNaN(date.getTime())) return ''
+  if (isNaN(date.getTime())) {
+    return ''
+  }
 
-  return date.toLocaleString('pt-BR')
+  return date.toLocaleString(
+    'pt-BR'
+  )
 }
 
-
-
 function mapPost(raw) {
+  if (!raw) {
+    return null
+  }
 
-  if (!raw) return null
-
-
-  const rawUser = raw.user || {}
+  const rawUser =
+    raw.user || {}
 
   const userName =
     rawUser.nome ||
     rawUser.name ||
     rawUser.email ||
-    "Usuário"
-
+    'Usuário'
 
   const imageUrl =
-    typeof raw.image === "string"
+    typeof raw.image === 'string'
       ? raw.image
-      : raw.image?.file || null
-
+      : raw.image?.file ||
+        null
 
   return {
+    id:
+      raw.id ??
+      raw.pk,
 
-    id: raw.id ?? raw.pk,
+    user:
+      userName,
 
-    user: userName,
+    avatar:
+      rawUser.avatar ||
+      null,
 
-    avatar: rawUser.avatar || null,
+    initials:
+      getInitials(
+        userName
+      ),
 
-    initials: getInitials(userName),
+    avatarColor:
+      getAvatarColor(
+        userName
+      ),
 
-    avatarColor: getAvatarColor(userName),
+    time:
+      formatTime(
+        raw.uploaded_on
+      ),
 
-    time: formatTime(raw.uploaded_on),
+    time2:
+      formatFullTime(
+        raw.uploaded_on
+      ),
 
-    time2: formatFullTime(raw.uploaded_on),
+    category:
+      raw.category ||
+      '',
 
-    category: raw.category || '',
+    tags:
+      raw.tags ||
+      [],
 
-    tags: raw.tags || [],
+    image:
+      imageUrl,
 
-    image: imageUrl,
+    imageClass:
+      raw.imageClass ||
+      'ph-1',
 
-    imageClass: raw.imageClass || 'ph-1',
+    imageIcon:
+      raw.imageIcon ||
+      'ti-photo',
 
-    imageIcon: raw.imageIcon || 'ti-photo',
+    liked:
+      raw.liked ??
+      false,
 
-    liked: raw.liked ?? false,
+    likes:
+      raw.likes ??
+      0,
 
-    likes: raw.likes ?? 0,
+    comments:
+      raw.comments ??
+      0,
 
-    comments: raw.comments ?? 0,
+    bookmarked:
+      raw.bookmarked ??
+      false,
 
-    bookmarked: raw.bookmarked ?? false,
-
-    caption: raw.text || ''
-
+    caption:
+      raw.text ||
+      ''
   }
 }
 
+function toggleLike(post) {
+  post.liked =
+    !post.liked
 
+  post.likes +=
+    post.liked
+      ? 1
+      : -1
+}
 
-async function loadPosts() {
+function toggleBookmark(post) {
+  post.bookmarked =
+    !post.bookmarked
+}
 
-  loading.value = true
+function formatCount(n) {
+  if (n >= 1000) {
+    return (
+      (n / 1000)
+        .toFixed(1)
+        .replace(
+          '.0',
+          ''
+        ) +
+      ' mil'
+    )
+  }
 
+  return String(n)
+}
+
+onMounted(() => {
   try {
+    feedStore.connect(
+      'global'
+    )
 
-    const response = await postStore.getPost()
-
-
-    const rawPosts = Array.isArray(response)
-      ? response
-      : response?.results ?? []
-
-
-    posts.value = rawPosts
-      .slice(0, MAX_POSTS)
-      .map(mapPost)
-      .filter(Boolean)
-
-
-  } catch(error){
-
-    console.error(error)
+    loading.value = false
+  } catch (error) {
+    console.error(
+      'Erro ao conectar ao Feed:',
+      error
+    )
 
     loadError.value =
       error.message ||
-      "Erro ao carregar posts"
-
-
-  } finally {
+      'Erro ao conectar ao Feed'
 
     loading.value = false
-
   }
-
-}
-
-
-
-
-function receiveSocketPosts(){
-
-  feedStore.posts.forEach(rawPost => {
-
-    const post = mapPost(rawPost)
-
-    if(!post) return
-
-
-    const exists = posts.value.some(
-      item => item.id === post.id
-    )
-
-
-    if(!exists){
-
-      posts.value.unshift(post)
-
-    }
-
-  })
-
-}
-
-
-
-onMounted(async()=>{
-
-
-  await loadPosts()
-
-
-  // conecta websocket
-  feedStore.connect("global")
-
-
-  // verifica novos posts a cada atualização
-  setInterval(()=>{
-
-    receiveSocketPosts()
-
-  },500)
-
-
 })
 
-
-
-onUnmounted(()=>{
-
+onUnmounted(() => {
   feedStore.disconnect()
-
 })
-
-
-
-
-function toggleLike(post){
-
-  post.liked = !post.liked
-
-  post.likes += post.liked ? 1 : -1
-
-}
-
-
-
-function toggleBookmark(post){
-
-  post.bookmarked = !post.bookmarked
-
-}
-
-
-
-function formatCount(n){
-
-  if(n >= 1000)
-
-    return (n / 1000)
-      .toFixed(1)
-      .replace('.0','') + ' mil'
-
-
-  return String(n)
-
-}
-
 </script>
 
 <style scoped>
@@ -485,17 +398,32 @@ function formatCount(n){
 
 .ph-1 {
   height: 280px;
-  background: linear-gradient(135deg, #0a0a16 0%, #16102a 40%, #1a0e24 100%);
+  background: linear-gradient(
+    135deg,
+    #0a0a16 0%,
+    #16102a 40%,
+    #1a0e24 100%
+  );
 }
 
 .ph-2 {
   height: 240px;
-  background: linear-gradient(160deg, #080c14 0%, #0d1824 50%, #101420 100%);
+  background: linear-gradient(
+    160deg,
+    #080c14 0%,
+    #0d1824 50%,
+    #101420 100%
+  );
 }
 
 .ph-3 {
   height: 260px;
-  background: linear-gradient(135deg, #0c100a 0%, #141a0e 50%, #10160a 100%);
+  background: linear-gradient(
+    135deg,
+    #0c100a 0%,
+    #141a0e 50%,
+    #10160a 100%
+  );
 }
 
 .ph-icon {
@@ -523,7 +451,9 @@ function formatCount(n){
   font-family: var(--font);
   background: transparent;
   border: none;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .act-btn:hover {
@@ -571,7 +501,10 @@ function formatCount(n){
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .share-btn:hover {

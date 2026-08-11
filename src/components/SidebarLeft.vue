@@ -47,26 +47,12 @@ const navItems = ref([
     badge: null,
     route: '/explorar'
   },
-  { 
-    label: 'Notificações', 
-    icon: 'ti-bell', 
-    active: false, 
-    badge: 4,
-    route: '/notificacoes'
-  },
-  { 
+   { 
     label: 'Chat', 
     icon: 'ti-message-2', 
     active: false, 
     badge: null,
     route: '/chat'
-  },
-  { 
-    label: 'Salvos', 
-    icon: 'ti-bookmark', 
-    active: false, 
-    badge: null,
-    route: '/salvos'
   },
   { 
     label: 'Perfil', 

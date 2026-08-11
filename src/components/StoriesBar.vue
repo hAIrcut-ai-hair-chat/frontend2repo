@@ -1,19 +1,15 @@
 <template>
   <div class="stories">
-    <div class="story add-story">
+    <RouterLink to="/stories" class="story add-story">
       <div class="story-ring">
         <div class="story-ring-inner story-ring-inner--add">
           <i class="ti ti-plus"></i>
         </div>
       </div>
       <span>Adicionar</span>
-    </div>
+    </RouterLink>
 
-    <div
-      v-for="s in stories"
-      :key="s.id"
-      class="story"
-    >
+    <div v-for="s in stories" :key="s.id" class="story">
       <div class="story-ring">
         <div class="story-ring-inner">
           <img :src="s.avatar" :alt="`Story de ${s.name}`" />
@@ -25,9 +21,9 @@
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router'
 defineProps({ stories: Array })
 </script>
-
 <style scoped>
 .stories {
   display: flex;
