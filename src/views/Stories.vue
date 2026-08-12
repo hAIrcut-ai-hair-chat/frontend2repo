@@ -1,3 +1,79 @@
+<script setup>
+import { ref } from 'vue'
+import ProgressBar from '@/components/ProgressBar.vue'
+import EditorTopBar from '@/components/EditorTopBar.vue'
+import StoryCanvas from '@/components/StoryCanvas.vue'
+import BottomBar from '@/components/BottomBar.vue'
+import CaptureRow from '@/components/CaptureRow.vue'
+import { useStoriesStore } from '@/stores/stories'
+
+const emit = defineEmits(['close', 'discard', 'open-gallery', 'share'])
+
+const storiesStore = useStoriesStore()
+
+const progress = ref(38)
+const flashOn = ref(false)
+
+const timerOptions = [0, 3, 10]
+const timerIndex = ref(0)
+
+const storyText = ref('Bom dia ✨')
+const showLocation = ref(true)
+const location = ref('Joinville, SC')
+
+const showMusic = ref(true)
+const musicLabel = ref('Sunday Morning · Nova')
+
+const selectedType = ref('Story')
+
+const selectedImage = ref(null)
+
+function cycleTimer() {
+  timerIndex.value =
+    (timerIndex.value + 1) % timerOptions.length
+}
+
+function cycleTextStyle() {}
+
+function onDraw() {}
+
+function onAddLink() {}
+
+function flipCamera() {}
+
+function addFreeText() {
+  storyText.value += ' '
+}
+
+function setImage(file) {
+  selectedImage.value = file
+}
+
+async function shareStory() {
+  try {
+    const story = await storiesStore.addStory(
+      storyText.value,
+      selectedImage.value
+    )
+
+    emit('share', story)
+
+    selectedImage.value = null
+  } catch (error) {
+    console.error('Erro ao publicar story:', error)
+  }
+}
+
+function openGallery() {
+  emit('open-gallery')
+}
+
+defineExpose({
+  shareStory,
+  setImage
+})
+</script>
+
 <template>
   <div class="phone">
     <div class="editor-canvas">
@@ -26,93 +102,29 @@
       />
 
       <BottomBar
-        :types="contentTypes"
+        :types="['Story']"
         :selected="selectedType"
         @select-type="selectedType = $event"
         @flip-camera="flipCamera"
       />
 
       <CaptureRow
-        @open-gallery="$emit('open-gallery')"
-        @capture="capture"
+        @open-gallery="openGallery"
+        @capture="shareStory"
         @add-free-text="addFreeText"
       />
+
+      <div v-if="storiesStore.loading" class="story-loading">
+        Publicando story...
+      </div>
+
+      <div v-if="storiesStore.hasError" class="story-error">
+        {{ storiesStore.error }}
+      </div>
 
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onBeforeMount } from 'vue'
-import ProgressBar from '@/components/ProgressBar.vue'
-import EditorTopBar from '@/components/EditorTopBar.vue'
-import StoryCanvas from '@/components/StoryCanvas.vue'
-import BottomBar from '@/components/BottomBar.vue'
-import CaptureRow from '@/components/CaptureRow.vue'
-
-const emit = defineEmits(['close', 'discard', 'open-gallery', 'share'])
-
-const progress = ref(38)
-const flashOn = ref(false)
-const timerOptions = [0, 3, 10]
-const timerIndex = ref(0)
-
-const storyText = ref('Bom dia ✨')
-const showLocation = ref(true)
-const location = ref('Joinville, SC')
-const showMusic = ref(true)
-const musicLabel = ref('Sunday Morning · Nova')
-
-    const selectedType = ref('Story')
-
-
-function cycleTimer() {
-  timerIndex.value = (timerIndex.value + 1) % timerOptions.length
-}
-
-function cycleTextStyle() {
-  // placeholder para alternância de estilo de texto
-}
-
-function onDraw() {
-  // placeholder para modo de desenho
-}
-
-function onAddLink() {
-  // placeholder para adicionar link
-}
-
-function flipCamera() {
-  // placeholder para troca de câmera frontal/traseira
-}
-
-
-
-function addFreeText() {
-  storyText.value = storyText.value + ' '
-}
-
-function shareStory() {
-  emit('share', {
-    text: storyText.value,
-    type: selectedType.value,
-    location: showLocation.value ? location.value : null,
-    music: showMusic.value ? musicLabel.value : null,
-  })
-}
-
-defineExpose({ shareStory })
-</script>
-
-<style>
-html, body, #app {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-</style>
 
 <style scoped>
 .phone {
