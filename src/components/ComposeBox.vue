@@ -65,11 +65,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { usePostsStore } from "@/stores/post";
+import { ref, watch } from "vue";
+import { useFeedStore } from "@/stores/postSocket";
 import { useUploaderStore } from "@/stores/uploader";
 
-const postStore = usePostsStore();
+const feedStore = useFeedStore();
 const uploaderStore = useUploaderStore();
 
 const text = ref("");
@@ -81,6 +81,16 @@ const imagePreview = ref(null);
 
 const isLoading = ref(false);
 const errorMessage = ref("");
+
+watch(
+  () => feedStore.error,
+  (newErr) => {
+    if (newErr) {
+      errorMessage.value = newErr;
+      feedStore.clearError();
+    }
+  }
+);
 
 function toggleEmoji() {
   showEmoji.value = !showEmoji.value;
@@ -130,21 +140,49 @@ async function publish() {
 
   if (isLoading.value) return;
 
+  if (!feedStore.connected) {
+    errorMessage.value = "Sem conexão com o servidor.";
+    return;
+  }
+
   isLoading.value = true;
   errorMessage.value = "";
 
-  try { 
-    await postStore.addPost(
-      text.value.trim(),
-      image.value,
-    );
+  try {
+    let imageKey = null;
+
+    if (image.value) {
+      const uploadedImage = await uploaderStore.addUploader(image.value);
+
+      if (!uploadedImage) {
+        throw new Error(
+          uploaderStore.error || "Erro ao fazer upload da imagem."
+        );
+      }
+
+      imageKey = uploadedImage.attachment_key;
+    }
+
+    const sent = feedStore.send({
+      text: text.value.trim() || null,
+      image: imageKey
+    });
+
+    if (!sent) {
+      throw new Error("Falha ao enviar a postagem.");
+    }
 
     text.value = "";
-    showEmoji.value = false;
     removeImage();
-  } catch (err) {
-    console.error(err);
-    errorMessage.value = "Erro ao publicar.";
+    showEmoji.value = false;
+  } catch (error) {
+    console.error("Erro ao publicar:", error);
+
+    errorMessage.value =
+      error.message ||
+      uploaderStore.error ||
+      feedStore.error ||
+      "Erro ao publicar.";
   } finally {
     isLoading.value = false;
   }

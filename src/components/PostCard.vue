@@ -1,4 +1,215 @@
-```vue
+<template>
+  <section class="feed">
+
+    <!-- Carregando -->
+    <div v-if="loading" class="loading-placeholder">
+      <i class="ti ti-loader-2 spinning"></i>
+      Carregando feed...
+    </div>
+
+    <!-- Erro -->
+    <div v-else-if="loadError" class="error-placeholder">
+      {{ loadError }}
+    </div>
+
+    <!-- Sem posts -->
+    <div v-else-if="posts.length === 0" class="loading-placeholder">
+      <i class="ti ti-message-circle"></i>
+      <p>Nenhuma postagem ainda.</p>
+    </div>
+
+    <!-- Posts -->
+    <article
+      v-for="post in posts"
+      :key="post.id"
+      class="post"
+    >
+
+      <!-- Cabeçalho -->
+      <div class="post-hdr">
+
+        <!-- Avatar com imagem -->
+        <img
+          v-if="post.avatar"
+          :src="post.avatar"
+          :alt="post.user"
+          class="avi"
+        />
+
+        <!-- Avatar com iniciais -->
+        <div
+          v-else
+          class="avi avi-grad"
+          :style="{
+            background: post.avatarColor
+          }"
+        >
+          {{ post.initials }}
+        </div>
+
+        <div class="post-meta">
+          <div class="post-name">
+            {{ post.user }}
+          </div>
+
+          <div class="post-sub">
+            <span>{{ post.time }}</span>
+
+            <span v-if="post.category">
+              · {{ post.category }}
+            </span>
+          </div>
+        </div>
+
+        <button
+          class="more-btn"
+          type="button"
+        >
+          <i class="ti ti-dots"></i>
+        </button>
+      </div>
+
+      <!-- Tags -->
+      <div
+        v-if="post.tags && post.tags.length"
+        class="post-tags"
+      >
+        <span
+          v-for="(tag, index) in post.tags"
+          :key="index"
+          class="tag"
+          :class="{
+            'tag-blue': index % 3 === 0,
+            'tag-purple': index % 3 === 1,
+            'tag-pink': index % 3 === 2
+          }"
+        >
+          #{{ tag }}
+        </span>
+      </div>
+
+      <!-- Imagem -->
+      <template v-if="post.image">
+
+        <img
+          :src="post.image"
+          :alt="post.caption || 'Imagem da postagem'"
+          class="post-img"
+        />
+
+      </template>
+
+      <!-- Placeholder quando não há imagem -->
+      <div
+        v-else
+        class="post-img-ph"
+        :class="post.imageClass"
+      >
+        <i
+          class="ti ph-icon"
+          :class="post.imageIcon"
+        ></i>
+      </div>
+
+      <!-- Ações -->
+      <div class="actions">
+
+        <!-- Curtir -->
+        <button
+          type="button"
+          class="act-btn"
+          :class="{ liked: post.liked }"
+          @click="toggleLike(post)"
+        >
+          <i
+            class="ti"
+            :class="
+              post.liked
+                ? 'ti-heart-filled'
+                : 'ti-heart'
+            "
+          ></i>
+
+          <span>
+            {{ formatCount(post.likes) }}
+          </span>
+        </button>
+
+        <!-- Comentários -->
+        <button
+          type="button"
+          class="act-btn"
+        >
+          <i class="ti ti-message-circle"></i>
+
+          <span>
+            {{ formatCount(post.comments) }}
+          </span>
+        </button>
+
+        <div class="act-spacer"></div>
+
+        <!-- Bookmark -->
+        <button
+          type="button"
+          class="act-btn"
+          :class="{
+            bookmarked: post.bookmarked
+          }"
+          @click="toggleBookmark(post)"
+        >
+          <i
+            class="ti"
+            :class="
+              post.bookmarked
+                ? 'ti-bookmark-filled'
+                : 'ti-bookmark'
+            "
+          ></i>
+        </button>
+
+        <!-- Compartilhar -->
+        <button
+          type="button"
+          class="share-btn"
+        >
+          <i class="ti ti-share-3"></i>
+          Compartilhar
+        </button>
+
+      </div>
+
+      <!-- Informações -->
+      <div class="info">
+
+        <div
+          v-if="post.likes > 0"
+          class="likes"
+        >
+          {{ formatCount(post.likes) }}
+          {{ post.likes === 1 ? 'curtida' : 'curtidas' }}
+        </div>
+
+        <div class="caption">
+          <strong>{{ post.user }}</strong>
+          {{ post.caption }}
+        </div>
+
+        <div
+          v-if="post.time2"
+          class="time"
+          :title="post.time2"
+        >
+          {{ post.time2 }}
+        </div>
+
+      </div>
+
+    </article>
+
+  </section>
+</template>
+
 <script setup>
 import {
   ref,
