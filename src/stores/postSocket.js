@@ -54,7 +54,7 @@ export const useFeedStore = defineStore("feedSocket", () => {
                 }
 
                 if (data.post) {
-                    posts.value.unshift(data.post);
+                    post.value.unshift(data.post);
                     return;
                 }
 
@@ -71,7 +71,7 @@ export const useFeedStore = defineStore("feedSocket", () => {
         socket.value.onerror = (event) => {
             console.error("Erro WebSocket:", event);
 
-            error.value = "Erro na conexão com o servidor.";
+            console.error = "Erro na conexão com o servidor.";
         };
 
         socket.value.onclose = (event) => {
@@ -94,11 +94,9 @@ export const useFeedStore = defineStore("feedSocket", () => {
     }
 
     function send(data) {
-        if (
-            !socket.value ||
-            socket.value.readyState !== WebSocket.OPEN
+        if (!socket.value ||socket.value.readyState !== WebSocket.OPEN
         ) {
-            error.value = "Conexão indisponível.";
+            console.error = "Conexão indisponível.";
             return false;
         }
 

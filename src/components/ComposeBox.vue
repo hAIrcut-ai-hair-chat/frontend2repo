@@ -4,11 +4,11 @@
       <div class="avatar-sm">JD</div>
 
       <input
-        type="text"
         v-model="text"
+        type="text"
         placeholder="Faça uma postagem aqui..."
-        @keydown.enter.prevent="publish"
         :disabled="isLoading"
+        @keydown.enter.prevent="publish"
       />
 
       <input
@@ -31,8 +31,14 @@
           @click="openImagePicker"
         ></i>
 
-        <div v-if="imagePreview" class="image-preview-thumb">
-          <img :src="imagePreview" alt="Prévia" />
+        <div
+          v-if="imagePreview"
+          class="image-preview-thumb"
+        >
+          <img
+            :src="imagePreview"
+            alt="Prévia da imagem"
+          />
 
           <button
             type="button"
@@ -44,149 +50,281 @@
         </div>
 
         <button
+          type="button"
           class="post-btn"
+          :disabled="
+            isLoading ||
+            (!text.trim() && !image)
+          "
           @click="publish"
-          :disabled="isLoading || (!text.trim() && !image)"
         >
-          <span v-if="isLoading">Publicando...</span>
-          <span v-else>Publicar</span>
+          <span v-if="isLoading">
+            Publicando...
+          </span>
+
+          <span v-else>
+            Publicar
+          </span>
         </button>
       </div>
     </div>
 
-    <div v-if="showEmoji" class="emoji-picker">
-      <emoji-picker @emoji-click="addEmoji"></emoji-picker>
+    <div
+      v-if="showEmoji"
+      class="emoji-picker"
+    >
+      <emoji-picker
+        @emoji-click="addEmoji"
+      ></emoji-picker>
     </div>
 
-    <div v-if="errorMessage" class="error-message">
+    <div
+      v-if="errorMessage"
+      class="error-message"
+    >
       {{ errorMessage }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { useFeedStore } from "@/stores/postSocket";
-import { useUploaderStore } from "@/stores/uploader";
+import {
+  ref,
+  watch,
+  onUnmounted
+} from 'vue'
 
-const feedStore = useFeedStore();
-const uploaderStore = useUploaderStore();
+import { useFeedStore } from '@/stores/postSocket'
+import { useUploaderStore } from '@/stores/uploader'
 
-const text = ref("");
-const showEmoji = ref(false);
+const feedStore = useFeedStore()
+const uploaderStore = useUploaderStore()
 
-const imageInput = ref(null);
-const image = ref(null);
-const imagePreview = ref(null);
+const text = ref('')
+const showEmoji = ref(false)
 
-const isLoading = ref(false);
-const errorMessage = ref("");
+const imageInput = ref(null)
+const image = ref(null)
+const imagePreview = ref(null)
+
+const isLoading = ref(false)
+const errorMessage = ref('')
 
 watch(
   () => feedStore.error,
-  (newErr) => {
-    if (newErr) {
-      errorMessage.value = newErr;
-      feedStore.clearError();
+  newError => {
+    if (!newError) {
+      return
+    }
+
+    errorMessage.value = newError
+
+    if (
+      typeof feedStore.clearError === 'function'
+    ) {
+      feedStore.clearError()
     }
   }
-);
+)
 
 function toggleEmoji() {
-  showEmoji.value = !showEmoji.value;
+  showEmoji.value = !showEmoji.value
 }
 
 function addEmoji(event) {
-  text.value += event.detail.unicode;
+  const emoji =
+    event?.detail?.unicode
+
+  if (!emoji) {
+    return
+  }
+
+  text.value += emoji
 }
 
 function openImagePicker() {
-  imageInput.value?.click();
+  if (isLoading.value) {
+    return
+  }
+
+  imageInput.value?.click()
 }
 
 function handleImage(event) {
-  const file = event.target.files[0];
+  const file =
+    event.target?.files?.[0]
 
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    errorMessage.value = "Selecione uma imagem válida.";
-    return;
+  if (!file) {
+    return
   }
 
-  image.value = file;
-  imagePreview.value = URL.createObjectURL(file);
-  errorMessage.value = "";
+  if (!file.type.startsWith('image/')) {
+    errorMessage.value =
+      'Selecione uma imagem válida.'
+
+    event.target.value = ''
+    return
+  }
+
+  if (imagePreview.value) {
+    URL.revokeObjectURL(
+      imagePreview.value
+    )
+  }
+
+  image.value = file
+
+  imagePreview.value =
+    URL.createObjectURL(file)
+
+  errorMessage.value = ''
 }
 
 function removeImage() {
   if (imagePreview.value) {
-    URL.revokeObjectURL(imagePreview.value);
+    URL.revokeObjectURL(
+      imagePreview.value
+    )
   }
 
-  image.value = null;
-  imagePreview.value = null;
+  image.value = null
+  imagePreview.value = null
 
   if (imageInput.value) {
-    imageInput.value.value = "";
+    imageInput.value.value = ''
   }
+}
+
+function isConnected() {
+  if (
+    typeof feedStore.connected ===
+    'boolean'
+  ) {
+    return feedStore.connected
+  }
+
+  if (feedStore.socket) {
+    return (
+      feedStore.socket.readyState ===
+      WebSocket.OPEN
+    )
+  }
+
+  return false
 }
 
 async function publish() {
-  if (!text.value.trim() && !image.value) {
-    errorMessage.value = "Escreva algo ou escolha uma imagem.";
-    return;
+  const content =
+    text.value.trim()
+
+  if (!content && !image.value) {
+    errorMessage.value =
+      'Escreva algo ou escolha uma imagem.'
+
+    return
   }
 
-  if (isLoading.value) return;
-
-  if (!feedStore.connected) {
-    errorMessage.value = "Sem conexão com o servidor.";
-    return;
+  if (isLoading.value) {
+    return
   }
 
-  isLoading.value = true;
-  errorMessage.value = "";
+  if (!isConnected()) {
+    errorMessage.value =
+      'Sem conexão com o servidor.'
+
+    return
+  }
+
+  isLoading.value = true
+  errorMessage.value = ''
 
   try {
-    let imageKey = null;
+    let imageKey = null
 
     if (image.value) {
-      const uploadedImage = await uploaderStore.addUploader(image.value);
+      const uploadedImage =
+        await uploaderStore.addUploader(
+          image.value
+        )
 
       if (!uploadedImage) {
         throw new Error(
-          uploaderStore.error || "Erro ao fazer upload da imagem."
-        );
+          uploaderStore.error ||
+          'Erro ao fazer upload da imagem.'
+        )
       }
 
-      imageKey = uploadedImage.attachment_key;
+      imageKey =
+        uploadedImage.attachment_key ||
+        uploadedImage.attachment?.attachment_key ||
+        uploadedImage.key ||
+        null
+
+      if (!imageKey) {
+        throw new Error(
+          'O upload foi realizado, mas nenhuma chave de imagem foi retornada.'
+        )
+      }
     }
 
-    const sent = feedStore.send({
-      text: text.value.trim() || null,
+    const payload = {
+      text: content || null,
       image: imageKey
-    });
+    }
+
+    console.log(
+      'Enviando postagem:',
+      payload
+    )
+
+    if (
+      typeof feedStore.send !==
+      'function'
+    ) {
+      throw new Error(
+        'A função send() não existe no feedStore.'
+      )
+    }
+
+    const sent =
+      feedStore.send(payload)
 
     if (!sent) {
-      throw new Error("Falha ao enviar a postagem.");
+      throw new Error(
+        feedStore.error ||
+        'Falha ao enviar a postagem.'
+      )
     }
 
-    text.value = "";
-    removeImage();
-    showEmoji.value = false;
+    text.value = ''
+
+    removeImage()
+
+    showEmoji.value = false
+
   } catch (error) {
-    console.error("Erro ao publicar:", error);
+    console.error(
+      'Erro ao publicar:',
+      error
+    )
 
     errorMessage.value =
-      error.message ||
+      error?.message ||
       uploaderStore.error ||
       feedStore.error ||
-      "Erro ao publicar.";
+      'Erro ao publicar.'
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
+
+onUnmounted(() => {
+  if (imagePreview.value) {
+    URL.revokeObjectURL(
+      imagePreview.value
+    )
+  }
+})
 </script>
 
 <style scoped>
@@ -199,7 +337,7 @@ async function publish() {
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
-  transition: border-color .2s;
+  transition: border-color 0.2s;
   position: relative;
 }
 
@@ -217,7 +355,11 @@ async function publish() {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(
+    135deg,
+    var(--accent),
+    var(--accent2)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,17 +369,18 @@ async function publish() {
   flex-shrink: 0;
 }
 
-.compose input[type="text"] {
+.compose input[type='text'] {
   flex: 1;
   background: transparent;
   border: none;
   outline: none;
   color: var(--txt);
   font-family: var(--font);
-  font-size: .9rem;
+  font-size: 0.9rem;
+  min-width: 0;
 }
 
-.compose input[type="text"]::placeholder {
+.compose input[type='text']::placeholder {
   color: var(--txt3);
 }
 
@@ -251,7 +394,7 @@ async function publish() {
   font-size: 20px;
   color: var(--txt3);
   cursor: pointer;
-  transition: .2s;
+  transition: 0.2s;
 }
 
 .compose-icon:hover {
@@ -269,6 +412,7 @@ async function publish() {
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .image-preview-thumb img {
@@ -279,18 +423,23 @@ async function publish() {
 
 .remove-image-thumb {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 2px;
+  right: 2px;
   width: 18px;
   height: 18px;
+  padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(0,0,0,.8);
+  background: rgba(0, 0, 0, 0.8);
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.remove-image-thumb .ti {
+  font-size: 12px;
 }
 
 .post-btn {
@@ -301,15 +450,16 @@ async function publish() {
   color: #03122e;
   cursor: pointer;
   font-weight: 600;
-  transition: .2s;
+  transition: 0.2s;
+  white-space: nowrap;
 }
 
 .post-btn:hover:not(:disabled) {
-  opacity: .9;
+  opacity: 0.9;
 }
 
 .post-btn:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -322,6 +472,6 @@ async function publish() {
 
 .error-message {
   color: #ff6b6b;
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 </style>
