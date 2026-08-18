@@ -1,34 +1,31 @@
 <template>
   <section class="feed">
 
-    <!-- Carregando -->
     <div v-if="loading" class="loading-placeholder">
       <i class="ti ti-loader-2 spinning"></i>
       Carregando feed...
     </div>
 
-    <!-- Erro -->
     <div v-else-if="loadError" class="error-placeholder">
       {{ loadError }}
     </div>
 
-    <!-- Sem posts -->
-    <div v-else-if="posts.length === 0" class="loading-placeholder">
+    <div
+      v-else-if="posts.length === 0"
+      class="loading-placeholder"
+    >
       <i class="ti ti-message-circle"></i>
       <p>Nenhuma postagem ainda.</p>
     </div>
 
-    <!-- Posts -->
     <article
       v-for="post in posts"
       :key="post.id"
       class="post"
     >
 
-      <!-- Cabeçalho -->
       <div class="post-hdr">
 
-        <!-- Avatar com imagem -->
         <img
           v-if="post.avatar"
           :src="post.avatar"
@@ -36,18 +33,16 @@
           class="avi"
         />
 
-        <!-- Avatar com iniciais -->
         <div
           v-else
           class="avi avi-grad"
-          :style="{
-            background: post.avatarColor
-          }"
+          :style="{ background: post.avatarColor }"
         >
           {{ post.initials }}
         </div>
 
         <div class="post-meta">
+
           <div class="post-name">
             {{ post.user }}
           </div>
@@ -59,6 +54,7 @@
               · {{ post.category }}
             </span>
           </div>
+
         </div>
 
         <button
@@ -67,16 +63,16 @@
         >
           <i class="ti ti-dots"></i>
         </button>
+
       </div>
 
-      <!-- Tags -->
       <div
-        v-if="post.tags && post.tags.length"
+        v-if="post.tags.length"
         class="post-tags"
       >
         <span
           v-for="(tag, index) in post.tags"
-          :key="index"
+          :key="`${post.id}-tag-${index}`"
           class="tag"
           :class="{
             'tag-blue': index % 3 === 0,
@@ -88,18 +84,13 @@
         </span>
       </div>
 
-      <!-- Imagem -->
-      <template v-if="post.image">
+      <img
+        v-if="post.image"
+        :src="post.image"
+        :alt="post.caption || 'Imagem da postagem'"
+        class="post-img"
+      />
 
-        <img
-          :src="post.image"
-          :alt="post.caption || 'Imagem da postagem'"
-          class="post-img"
-        />
-
-      </template>
-
-      <!-- Placeholder quando não há imagem -->
       <div
         v-else
         class="post-img-ph"
@@ -111,10 +102,8 @@
         ></i>
       </div>
 
-      <!-- Ações -->
       <div class="actions">
 
-        <!-- Curtir -->
         <button
           type="button"
           class="act-btn"
@@ -135,7 +124,6 @@
           </span>
         </button>
 
-        <!-- Comentários -->
         <button
           type="button"
           class="act-btn"
@@ -149,7 +137,6 @@
 
         <div class="act-spacer"></div>
 
-        <!-- Bookmark -->
         <button
           type="button"
           class="act-btn"
@@ -168,7 +155,6 @@
           ></i>
         </button>
 
-        <!-- Compartilhar -->
         <button
           type="button"
           class="share-btn"
@@ -179,7 +165,6 @@
 
       </div>
 
-      <!-- Informações -->
       <div class="info">
 
         <div
@@ -213,6 +198,7 @@
 <script setup>
 import {
   ref,
+  computed,
   onMounted,
   onUnmounted
 } from 'vue'
@@ -234,8 +220,6 @@ const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #fb923c, #f472b6)',
   'linear-gradient(135deg, #60a5fa, #34d399)'
 ]
-
-const posts = feedStore.posts
 
 function getAvatarColor(seed) {
   if (!seed) {
@@ -265,10 +249,7 @@ function getInitials(name) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map(
-      part =>
-        part[0]?.toUpperCase()
-    )
+    .map(part => part[0]?.toUpperCase())
     .join('')
 }
 
@@ -279,18 +260,15 @@ function formatTime(isoDate) {
 
   const date = new Date(isoDate)
 
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return ''
   }
 
   const diffMs =
-    Date.now() -
-    date.getTime()
+    Date.now() - date.getTime()
 
   const diffMin =
-    Math.floor(
-      diffMs / 60000
-    )
+    Math.floor(diffMs / 60000)
 
   if (diffMin < 1) {
     return 'agora'
@@ -301,17 +279,13 @@ function formatTime(isoDate) {
   }
 
   const diffH =
-    Math.floor(
-      diffMin / 60
-    )
+    Math.floor(diffMin / 60)
 
   if (diffH < 24) {
     return `${diffH}h`
   }
 
-  return date.toLocaleDateString(
-    'pt-BR'
-  )
+  return date.toLocaleDateString('pt-BR')
 }
 
 function formatFullTime(isoDate) {
@@ -321,13 +295,11 @@ function formatFullTime(isoDate) {
 
   const date = new Date(isoDate)
 
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return ''
   }
 
-  return date.toLocaleString(
-    'pt-BR'
-  )
+  return date.toLocaleString('pt-BR')
 }
 
 function mapPost(raw) {
@@ -336,11 +308,14 @@ function mapPost(raw) {
   }
 
   const rawUser =
-    raw.user || {}
+    raw.user && typeof raw.user === 'object'
+      ? raw.user
+      : {}
 
   const userName =
     rawUser.nome ||
     rawUser.name ||
+    rawUser.username ||
     rawUser.email ||
     'Usuário'
 
@@ -348,116 +323,109 @@ function mapPost(raw) {
     typeof raw.image === 'string'
       ? raw.image
       : raw.image?.file ||
+        raw.image?.url ||
         null
 
   return {
     id:
       raw.id ??
-      raw.pk,
+      raw.pk ??
+      raw.uuid,
 
-    user:
-      userName,
+    user: userName,
 
     avatar:
       rawUser.avatar ||
+      rawUser.profile_image ||
       null,
 
     initials:
-      getInitials(
-        userName
-      ),
+      getInitials(userName),
 
     avatarColor:
-      getAvatarColor(
-        userName
-      ),
+      getAvatarColor(userName),
 
     time:
-      formatTime(
-        raw.uploaded_on
-      ),
+      formatTime(raw.uploaded_on),
 
     time2:
-      formatFullTime(
-        raw.uploaded_on
-      ),
+      formatFullTime(raw.uploaded_on),
 
     category:
-      raw.category ||
-      '',
+      raw.category || '',
 
     tags:
-      raw.tags ||
-      [],
+      Array.isArray(raw.tags)
+        ? raw.tags
+        : [],
 
     image:
       imageUrl,
 
     imageClass:
-      raw.imageClass ||
-      'ph-1',
+      raw.imageClass || 'ph-1',
 
     imageIcon:
-      raw.imageIcon ||
-      'ti-photo',
+      raw.imageIcon || 'ti-photo',
 
     liked:
-      raw.liked ??
-      false,
+      Boolean(raw.liked),
 
     likes:
-      raw.likes ??
-      0,
+      Number(raw.likes ?? 0),
 
     comments:
-      raw.comments ??
-      0,
+      Number(raw.comments ?? 0),
 
     bookmarked:
-      raw.bookmarked ??
-      false,
+      Boolean(raw.bookmarked),
 
     caption:
-      raw.text ||
-      ''
+      raw.text || ''
   }
 }
 
-function toggleLike(post) {
-  post.liked =
-    !post.liked
+const posts = computed(() => {
+  return feedStore.posts
+    .slice(0, MAX_POSTS)
+    .map(mapPost)
+    .filter(Boolean)
+})
 
-  post.likes +=
-    post.liked
-      ? 1
-      : -1
+function toggleLike(post) {
+  if (post.liked) {
+    post.likes = Math.max(0, post.likes - 1)
+    post.liked = false
+    return
+  }
+
+  post.likes += 1
+  post.liked = true
 }
 
 function toggleBookmark(post) {
-  post.bookmarked =
-    !post.bookmarked
+  post.bookmarked = !post.bookmarked
 }
 
 function formatCount(n) {
-  if (n >= 1000) {
+  const count = Number(n) || 0
+
+  if (count >= 1000) {
     return (
-      (n / 1000)
+      (count / 1000)
         .toFixed(1)
-        .replace(
-          '.0',
-          ''
-        ) +
+        .replace('.0', '') +
       ' mil'
     )
   }
 
-  return String(n)
+  return String(count)
 }
 
 onMounted(() => {
   try {
     feedStore.connect(
-      'global'
+      '6b2802b4-4b1b-415c-80a5-461563afec9c'
     )
 
     loading.value = false
@@ -468,7 +436,7 @@ onMounted(() => {
     )
 
     loadError.value =
-      error.message ||
+      error?.message ||
       'Erro ao conectar ao Feed'
 
     loading.value = false
@@ -692,10 +660,6 @@ onUnmounted(() => {
   color: var(--accent);
 }
 
-.delete-btn:hover {
-  color: #f87171 !important;
-}
-
 .act-spacer {
   flex: 1;
 }
@@ -766,6 +730,8 @@ onUnmounted(() => {
 }
 
 .error-placeholder {
+  padding: 1rem;
+  text-align: center;
   color: #f87171;
 }
 
