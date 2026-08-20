@@ -1,132 +1,166 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
-export const useFeedStore = defineStore("feedSocket", () => {
-    const socket = ref(null);
-    const posts = ref([]);
-    const connected = ref(false);
-    const error = ref(null);
+export const useFeedStore = defineStore('feedSocket', () => {
+    const socket = ref(null)
+    const posts = ref([])
+    const connected = ref(false)
+    const error = ref(null)
 
     function getToken() {
-        return localStorage.getItem("token") || sessionStorage.getItem("token");
+        return (
+            localStorage.getItem('token') ||
+            sessionStorage.getItem('token')
+        )
     }
 
-    function connect(room_id = "fbf51634-2393-4728-aea7-5c9a6ab676ad") {
+    function connect(
+        room_id = 'fbf51634-2393-4728-aea7-5c9a6ab676ad'
+    ) {
         if (!room_id) {
-            error.value = "Sala não informada.";
-            return;
+            error.value = 'Sala não informada.'
+            return
         }
 
-        const token = getToken();
+        const token = getToken()
 
         if (!token) {
-            error.value = "Usuário não autenticado.";
-            return;
+            error.value = 'Usuário não autenticado.'
+            return
         }
 
         if (socket.value) {
-            socket.value.close();
+            socket.value.close()
         }
 
         const wsUrl =
-            `${import.meta.env.VITE_WS_URL}/ws/feed/${room_id}/?token=${encodeURIComponent(token)}`;
+            `${import.meta.env.VITE_WS_URL}/ws/feed/${room_id}/?token=${encodeURIComponent(token)}`
 
-        console.log("Conectando:", wsUrl);
+        console.log('Conectando:', wsUrl)
 
-        socket.value = new WebSocket(wsUrl);
+        socket.value = new WebSocket(wsUrl)
 
         socket.value.onopen = () => {
-            console.log("Socket conectado");
+            console.log('Socket conectado')
 
-            connected.value = true;
-            error.value = null;
-        };
+            connected.value = true
+            error.value = null
+        }
 
         socket.value.onmessage = (event) => {
             try {
-                const data = JSON.parse(event.data);
+                const data = JSON.parse(event.data)
 
-                console.log("WebSocket recebeu:", data);
+                console.log('WebSocket recebeu:', data)
 
                 if (data.error) {
-                    error.value = data.error;
-                    return;
+                    error.value = data.error
+                    return
                 }
 
                 if (data.post) {
-                    post.value.unshift(data.post);
-                    return;
+                    posts.value.unshift(data.post)
+                    return
                 }
 
                 if (data.posts) {
-                    posts.value = data.posts;
-                    return;
+                    posts.value = data.posts
+                    return
                 }
-
             } catch (e) {
-                console.error("Mensagem inválida:", event.data);
+                console.error(
+                    'Mensagem inválida:',
+                    event.data
+                )
             }
-        };
+        }
 
         socket.value.onerror = (event) => {
-            console.error("Erro WebSocket:", event);
+            console.error('Erro WebSocket:', event)
 
-            console.error = "Erro na conexão com o servidor.";
-        };
+            error.value =
+                'Erro na conexão com o servidor.'
+        }
 
         socket.value.onclose = (event) => {
-            console.log("Socket desconectado:", event.code, event.reason);
+            console.log(
+                'Socket desconectado:',
+                event.code,
+                event.reason
+            )
 
-            connected.value = false;
-            socket.value = null;
+            connected.value = false
+            "socket.value = null"
+            console.log("Socket que fechou", socket.value)
 
             const closeMessages = {
-                4000: "Erro interno ao conectar.",
-                4001: "Usuário não autenticado.",
-                4002: "Sala não informada.",
-                4004: "Sala não encontrada.",
-            };
+                4000: 'Erro interno ao conectar.',
+                4001: 'Usuário não autenticado.',
+                4002: 'Sala não informada.',
+                4004: 'Sala não encontrada.'
+            }
 
             if (closeMessages[event.code]) {
-                error.value = closeMessages[event.code];
+                error.value = closeMessages[event.code]
             }
-        };
+        }
     }
 
     function send(data) {
-        if (!socket.value ||socket.value.readyState !== WebSocket.OPEN
+        console.log('=== SEND WEBSOCKET ===')
+        console.log('Socket:', socket.value)
+        console.log('ReadyState:', socket.value?.readyState)
+        console.log('OPEN:', WebSocket.OPEN)
+        console.log('Dados:', data)
+
+        if (
+            !socket.value ||
+            socket.value.readyState !== WebSocket.OPEN
         ) {
-            console.error = "Conexão indisponível.";
-            return false;
+            console.error('WebSocket não está aberto.')
+
+            error.value = 'Conexão indisponível.'
+
+            return false
         }
 
         try {
-            socket.value.send(JSON.stringify(data));
-            return true;
-        } catch (e) {
-            console.error("Erro ao enviar:", e);
+            const payload = JSON.stringify(data)
 
-            error.value = "Erro ao enviar mensagem.";
+            console.log('Enviando JSON:', payload)
 
-            return false;
+            socket.value.send(payload)
+
+            console.log('socket.send() executado')
+
+            return true
+        } catch (err) {
+            console.error(
+                'Erro no socket.send():',
+                err
+            )
+
+            error.value = 'Erro ao enviar mensagem.'
+
+            return false
         }
     }
 
     function disconnect() {
         if (socket.value) {
-            socket.value.close();
-            socket.value = null;
+            socket.value.close()
+            socket.value = null
         }
 
-        connected.value = false;
+        connected.value = false
     }
 
     function clearPosts() {
-        posts.value = [];
+        posts.value = []
     }
 
     function clearError() {
-        error.value = null;
+        error.value = null
     }
 
     return {
@@ -138,6 +172,6 @@ export const useFeedStore = defineStore("feedSocket", () => {
         send,
         disconnect,
         clearPosts,
-        clearError,
-    };
-});
+        clearError
+    }
+})

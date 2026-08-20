@@ -3,61 +3,27 @@
     <div class="compose-row">
       <div class="avatar-sm">JD</div>
 
-      <input
-        v-model="text"
-        type="text"
-        placeholder="Faça uma postagem aqui..."
-        :disabled="isLoading"
-        @keydown.enter.prevent="publish"
-      />
+      <input v-model="text" type="text" placeholder="Faça uma postagem aqui..." :disabled="isLoading"
+        @keydown.enter.prevent="publish" />
 
-      <input
-        ref="imageInput"
-        type="file"
-        accept="image/*"
-        hidden
-        @change="handleImage"
-      />
+      <input ref="imageInput" type="file" accept="image/*" hidden @change="handleImage" />
 
       <div class="compose-actions">
-        <i
-          class="ti ti-mood-smile compose-icon"
-          :class="{ active: showEmoji }"
-          @click="toggleEmoji"
-        ></i>
+        <i class="ti ti-mood-smile compose-icon" :class="{ active: showEmoji }" @click="toggleEmoji"></i>
 
-        <i
-          class="ti ti-photo compose-icon"
-          @click="openImagePicker"
-        ></i>
+        <i class="ti ti-photo compose-icon" @click="openImagePicker"></i>
 
-        <div
-          v-if="imagePreview"
-          class="image-preview-thumb"
-        >
-          <img
-            :src="imagePreview"
-            alt="Prévia da imagem"
-          />
+        <div v-if="imagePreview" class="image-preview-thumb">
+          <img :src="imagePreview" alt="Prévia da imagem" />
 
-          <button
-            type="button"
-            class="remove-image-thumb"
-            @click="removeImage"
-          >
+          <button type="button" class="remove-image-thumb" @click="removeImage">
             <i class="ti ti-x"></i>
           </button>
         </div>
 
-        <button
-          type="button"
-          class="post-btn"
-          :disabled="
-            isLoading ||
-            (!text.trim() && !image)
-          "
-          @click="publish"
-        >
+        <button type="button" class="post-btn" :disabled="isLoading ||
+          (!text.trim() && !image)
+          " @click="publish">
           <span v-if="isLoading">
             Publicando...
           </span>
@@ -69,19 +35,11 @@
       </div>
     </div>
 
-    <div
-      v-if="showEmoji"
-      class="emoji-picker"
-    >
-      <emoji-picker
-        @emoji-click="addEmoji"
-      ></emoji-picker>
+    <div v-if="showEmoji" class="emoji-picker">
+      <emoji-picker @emoji-click="addEmoji"></emoji-picker>
     </div>
 
-    <div
-      v-if="errorMessage"
-      class="error-message"
-    >
+    <div v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
   </div>
@@ -253,18 +211,10 @@ async function publish() {
           'Erro ao fazer upload da imagem.'
         )
       }
+      
+    imageKey = uploadedImage
 
-      imageKey =
-        uploadedImage.attachment_key ||
-        uploadedImage.attachment?.attachment_key ||
-        uploadedImage.key ||
-        null
 
-      if (!imageKey) {
-        throw new Error(
-          'O upload foi realizado, mas nenhuma chave de imagem foi retornada.'
-        )
-      }
     }
 
     const payload = {
@@ -272,9 +222,7 @@ async function publish() {
       image: imageKey
     }
 
-    console.log(
-      'Enviando postagem:',
-      payload
+    console.log('Enviando postagem:', payload
     )
 
     if (
@@ -355,11 +303,9 @@ onUnmounted(() => {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    var(--accent),
-    var(--accent2)
-  );
+  background: linear-gradient(135deg,
+      var(--accent),
+      var(--accent2));
   display: flex;
   align-items: center;
   justify-content: center;
