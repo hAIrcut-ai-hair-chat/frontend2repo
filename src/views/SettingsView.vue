@@ -145,7 +145,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import SettingsField from '@/components/SettingsField.vue'
-import Toast from '@/components/Toast.vue'
+import Toast from '@/components/profile/Toast.vue'
 import { useSettingsStore } from '@/stores/settings'
 
 

@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import ProgressBar from '@/components/ProgressBar.vue'
+import ProgressBar from '@/components/login/ProgressBar.vue'
 import EditorTopBar from '@/components/EditorTopBar.vue'
 import StoryCanvas from '@/components/StoryCanvas.vue'
 import BottomBar from '@/components/BottomBar.vue'
-import CaptureRow from '@/components/CaptureRow.vue'
+import CaptureRow from '@/components/story/CaptureRow.vue'
 import { useStoriesStore } from '@/stores/stories'
 
 const emit = defineEmits(['close', 'discard', 'open-gallery', 'share'])

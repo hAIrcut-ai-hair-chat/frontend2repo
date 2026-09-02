@@ -200,10 +200,9 @@ async function publish() {
     let imageKey = null
 
     if (image.value) {
-      const uploadedImage =
-        await uploaderStore.addUploader(
-          image.value
-        )
+      const uploadedImage = await uploaderStore.addUploader(
+        image.value
+      )
 
       if (!uploadedImage) {
         throw new Error(
@@ -211,16 +210,15 @@ async function publish() {
           'Erro ao fazer upload da imagem.'
         )
       }
-      
-    imageKey = uploadedImage
 
-
+      imageKey = uploadedImage.uuid
     }
 
     const payload = {
       text: content || null,
       image: imageKey
     }
+
 
     console.log('Enviando postagem:', payload
     )

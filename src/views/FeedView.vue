@@ -18,7 +18,7 @@ import { ref } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import SidebarLeft from '@/components/SidebarLeft.vue'
 import SidebarRight from '@/components/SidebarRight.vue'
-import StoriesBar from '@/components/StoriesBar.vue'
+import StoriesBar from '@/components/story/StoriesBar.vue'
 import ComposeBox from '@/components/ComposeBox.vue'
 import PostFeed from '@/components/PostFeed.vue'
 

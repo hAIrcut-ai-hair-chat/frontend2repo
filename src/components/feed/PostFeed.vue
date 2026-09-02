@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-import PostCard from './PostCard.vue'
+import PostCard from './feed/PostCard.vue/index.js'
 
 defineProps({ posts: Array })
 defineEmits(['delete'])

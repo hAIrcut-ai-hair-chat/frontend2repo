@@ -27,9 +27,9 @@
 </template>
 
 <script setup>
-import LocationSticker from './LocationSticker.vue'
-import MusicSticker from './MusicSticker.vue'
-import EditableStoryText from './EditableStoryText.vue'
+import LocationSticker from './story/LocationSticker.vue'
+import MusicSticker from './story/MusicSticker.vue'
+import EditableStoryText from './story/EditableStoryText.vue'
 import ToolsRail from './ToolsRail.vue'
 
 defineProps({

@@ -8,15 +8,10 @@ export const useFeedStore = defineStore('feedSocket', () => {
     const error = ref(null)
 
     function getToken() {
-        return (
-            localStorage.getItem('token') ||
-            sessionStorage.getItem('token')
-        )
+        return (localStorage.getItem('token') || sessionStorage.getItem('token'))
     }
 
-    function connect(
-        room_id = 'fbf51634-2393-4728-aea7-5c9a6ab676ad'
-    ) {
+    function connect(room_id = 'fbf51634-2393-4728-aea7-5c9a6ab676ad') {
         if (!room_id) {
             error.value = 'Sala não informada.'
             return
@@ -33,8 +28,7 @@ export const useFeedStore = defineStore('feedSocket', () => {
             socket.value.close()
         }
 
-        const wsUrl =
-            `${import.meta.env.VITE_WS_URL}/ws/feed/${room_id}/?token=${encodeURIComponent(token)}`
+        const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/feed/${room_id}/?token=${encodeURIComponent(token)}`
 
         console.log('Conectando:', wsUrl)
 
@@ -68,37 +62,24 @@ export const useFeedStore = defineStore('feedSocket', () => {
                     return
                 }
             } catch (e) {
-                console.error(
-                    'Mensagem inválida:',
-                    event.data
-                )
+                console.error('Mensagem inválida:', event.data)
             }
         }
 
         socket.value.onerror = (event) => {
             console.error('Erro WebSocket:', event)
 
-            error.value =
-                'Erro na conexão com o servidor.'
+            error.value = 'Erro na conexão com o servidor.'
         }
 
         socket.value.onclose = (event) => {
-            console.log(
-                'Socket desconectado:',
-                event.code,
-                event.reason
-            )
+            console.log('Socket desconectado:', event.code, event.reason)
 
             connected.value = false
-            "socket.value = null"
+            socket.value = null
             console.log("Socket que fechou", socket.value)
 
-            const closeMessages = {
-                4000: 'Erro interno ao conectar.',
-                4001: 'Usuário não autenticado.',
-                4002: 'Sala não informada.',
-                4004: 'Sala não encontrada.'
-            }
+            const closeMessages = { 4000: 'Erro interno ao conectar.', 4001: 'Usuário não autenticado.', 4002: 'Sala não informada.', 4004: 'Sala não encontrada.' }
 
             if (closeMessages[event.code]) {
                 error.value = closeMessages[event.code]
@@ -113,14 +94,9 @@ export const useFeedStore = defineStore('feedSocket', () => {
         console.log('OPEN:', WebSocket.OPEN)
         console.log('Dados:', data)
 
-        if (
-            !socket.value ||
-            socket.value.readyState !== WebSocket.OPEN
-        ) {
+        if (!socket.value || socket.value.readyState !== WebSocket.OPEN) {
             console.error('WebSocket não está aberto.')
-
             error.value = 'Conexão indisponível.'
-
             return false
         }
 
@@ -135,13 +111,8 @@ export const useFeedStore = defineStore('feedSocket', () => {
 
             return true
         } catch (err) {
-            console.error(
-                'Erro no socket.send():',
-                err
-            )
-
+            console.error('Erro no socket.send():', err)
             error.value = 'Erro ao enviar mensagem.'
-
             return false
         }
     }

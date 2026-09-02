@@ -61,8 +61,8 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import AuthCard from "@/components/AuthCard.vue";
-import AuthField from "@/components/AuthField.vue";
+import AuthCard from "@/components/login/AuthCard.vue";
+import AuthField from "@/components/login/AuthField.vue";
 import { useForgetPasswordStore } from "@/stores/forget_password";
 
 const forgetPasswordStore = useForgetPasswordStore();

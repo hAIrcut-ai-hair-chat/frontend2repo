@@ -1,8 +1,8 @@
 <script setup>
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthCard from '@/components/AuthCard.vue'
-import AuthField from '@/components/AuthField.vue'
+import AuthCard from '@/components/login/AuthCard.vue'
+import AuthField from '@/components/login/AuthField.vue'
 
 import { useAuthStore } from '@/stores/login'
 
